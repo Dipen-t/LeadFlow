@@ -56,18 +56,13 @@ const UserSchema = new Schema(
 );
 
 // Hash password before saving
-UserSchema.pre<IUser>('save', async function (next) {
+UserSchema.pre<IUser>('save', async function () {
   if (!this.isModified('passwordHash')) {
-    return next();
+    return;
   }
 
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
-    next();
-  } catch (error: any) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(10);
+  this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
 });
 
 // Method to compare password
