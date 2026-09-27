@@ -27,7 +27,7 @@ export const triggerStageAutomations = async (
         attempts: 3, // 15.4 Retry where appropriate if provider fails
         backoff: { type: 'exponential', delay: 2000 },
       });
-      logger.info(`Email automation queued for Lead ${leadId}`);
+      logger.info({ event: 'email.queued', leadId }, `Email automation queued for Lead ${leadId}`);
     }
 
     // 2. Process Task Automations
@@ -51,7 +51,7 @@ export const triggerStageAutomations = async (
         });
 
         await Task.insertMany(tasksToCreate);
-        logger.info(`${tasksToCreate.length} task automations assigned to Advisor ${lead.assignedAdvisorId} for Lead ${leadId}`);
+        logger.info({ event: 'task.created', leadId, taskCount: tasksToCreate.length }, `${tasksToCreate.length} task automations assigned to Advisor ${lead.assignedAdvisorId} for Lead ${leadId}`);
       }
     }
 

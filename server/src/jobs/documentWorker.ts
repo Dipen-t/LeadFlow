@@ -19,6 +19,7 @@ export const documentWorker = new Worker('document-verification', async (job: Jo
 
   // Notify clients
   broadcastToBrokerage(brokerageId, 'document.processing', { documentId: doc._id });
+  logger.info({ event: 'document.processing_started', documentId: doc._id }, 'Document verification started');
 
   // 2. Simulate processing delay (2-4 seconds) as per assignment instructions
   const delay = Math.floor(Math.random() * 2000) + 2000;
@@ -34,6 +35,7 @@ export const documentWorker = new Worker('document-verification', async (job: Jo
      await doc.save();
      
      broadcastToBrokerage(brokerageId, 'document.failed', { documentId: doc._id, reason: doc.failureReason });
+     logger.warn({ event: 'document.processing_failed', documentId: doc._id, reason: doc.failureReason }, 'Document verification failed');
      throw new Error(doc.failureReason); // Will trigger BullMQ automatic retries if configured
   }
 
@@ -44,7 +46,7 @@ export const documentWorker = new Worker('document-verification', async (job: Jo
   await doc.save();
   
   broadcastToBrokerage(brokerageId, 'document.verified', { documentId: doc._id });
-  logger.info(`Document ${documentId} verified successfully`);
+  logger.info({ event: 'document.verified', documentId: doc._id }, `Document ${documentId} verified successfully`);
 
 }, { 
   connection: redisConnection,

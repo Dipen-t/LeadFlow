@@ -38,7 +38,7 @@ export const ingestLead = async (req: Request, res: Response, next: NextFunction
        });
 
        if (existingLead) {
-          logger.info(`Idempotent webhook hit for lead ${existingLead._id}`);
+          logger.info({ event: 'lead.duplicate_detected', leadId: existingLead._id }, `Idempotent webhook hit for lead ${existingLead._id}`);
           return res.status(200).json({ status: 'success', data: { lead: existingLead } });
        }
     }
@@ -61,6 +61,8 @@ export const ingestLead = async (req: Request, res: Response, next: NextFunction
 
     // 6. Broadcast Real-Time socket event to the tenant's advisors
     broadcastToBrokerage(integration.brokerageId.toString(), 'lead.new', { lead });
+
+    logger.info({ event: 'lead.created', leadId: lead._id }, 'Lead created via webhook');
 
     res.status(201).json({ status: 'success', data: { lead } });
   } catch (err) {

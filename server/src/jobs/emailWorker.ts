@@ -55,5 +55,5 @@ export const emailWorker = new Worker('email-automation', async (job: Job) => {
 });
 
 emailWorker.on('failed', (job, err) => {
-  logger.error(`Email Job ${job?.id} failed with error ${err.message}. Retrying via BullMQ backoff...`);
+  logger.error({ event: 'email.failed', leadId: job?.data.leadId }, `Email Job ${job?.id} failed with error ${err.message}. Retrying via BullMQ backoff...`);
 });

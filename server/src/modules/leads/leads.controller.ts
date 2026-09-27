@@ -4,6 +4,7 @@ import { Lead } from './lead.model';
 import { NotFoundError, AppError } from '../../utils/errors';
 import { broadcastToBrokerage } from '../../sockets';
 import { triggerStageAutomations } from '../automations/automation.service';
+import { logger } from '../../utils/logger';
 
 const updateStageSchema = z.object({
   pipelineStageId: z.string().min(24),
@@ -58,6 +59,7 @@ export const moveLeadStage = async (req: Request, res: Response, next: NextFunct
     }
 
     broadcastToBrokerage(brokerageId, 'lead.stageChanged', { lead });
+    logger.info({ event: 'lead.stage_changed', leadId: lead._id, stageId: pipelineStageId }, 'Lead moved to a new stage');
 
     res.json({
       status: 'success',
