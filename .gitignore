@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+
+# Build and dist outputs
+dist/
+build/
+.next/
+out/
+public/build/
+
+# dotenv environment variable files
+.env
+.env.test
+.env.development
+.env.production
+.env*.local
+
+# TypeScript cache
+*.tsbuildinfo
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Misc
+.cache
+.eslintcache
+coverage/
+.nyc_output/
