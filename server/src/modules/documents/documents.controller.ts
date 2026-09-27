@@ -4,6 +4,7 @@ import { Client } from '../clients/client.model';
 import { documentQueue } from '../../jobs/documentQueue';
 import { NotFoundError, AppError } from '../../utils/errors';
 import { z } from 'zod';
+import { logger } from '../../utils/logger';
 
 const uploadSchema = z.object({
   clientId: z.string().min(24),
@@ -47,6 +48,7 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
     });
 
     // 4. Return 202 Accepted allowing client UX to remain fluid
+    logger.info({ event: 'document.uploaded', documentId: doc._id }, 'Document successfully uploaded and verification queued');
     res.status(202).json({
       status: 'success',
       data: { document: doc },
