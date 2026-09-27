@@ -1,0 +1,14 @@
+import { Router } from 'express';
+import { getLeads, moveLeadStage } from './leads.controller';
+import { authenticate, requireRole } from '../../middleware/authHandler';
+import { requireBrokerage } from '../../middleware/tenantHandler';
+
+const router = Router();
+
+// All lead interactions require authentication and a tenant context
+router.use(authenticate, requireBrokerage);
+
+router.get('/', requireRole(['BROKERAGE_ADMIN', 'ADVISOR']), getLeads);
+router.patch('/:id/stage', requireRole(['BROKERAGE_ADMIN', 'ADVISOR']), moveLeadStage);
+
+export default router;

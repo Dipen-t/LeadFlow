@@ -16,6 +16,9 @@ export const requireBrokerage = (
 
   // Ensure normal users are confined to their brokerage
   // We can attach the active brokerageId to the request for easy access
+  if (!req.body) {
+    req.body = {};
+  }
   req.body.brokerageId = req.user.brokerageId;
   
   next();

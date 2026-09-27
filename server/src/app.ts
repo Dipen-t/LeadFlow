@@ -7,6 +7,9 @@ import { env } from './config/env';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import authRouter from './modules/auth/auth.routes';
+import pipelineRouter from './modules/pipeline/pipeline.routes';
+import leadsRouter from './modules/leads/leads.routes';
+import webhooksRouter from './modules/webhooks/webhooks.routes';
 
 const app = express();
 
@@ -49,6 +52,9 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRouter);
+app.use('/api/pipeline', pipelineRouter);
+app.use('/api/leads', leadsRouter);
+app.use('/api/webhooks', webhooksRouter);
 
 // Error Handling
 app.use(errorHandler);
