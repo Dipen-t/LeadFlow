@@ -1,0 +1,63 @@
+import { EmailTemplate, TaskTemplate } from './automation.model';
+import { emailQueue } from '../../jobs/emailQueue';
+import { Task } from '../tasks/task.model';
+import { Lead } from '../leads/lead.model';
+import mongoose from 'mongoose';
+import { logger } from '../../utils/logger';
+
+export const triggerStageAutomations = async (
+  brokerageId: mongoose.Types.ObjectId,
+  pipelineStageId: mongoose.Types.ObjectId,
+  leadId: mongoose.Types.ObjectId
+) => {
+  try {
+    const lead = await Lead.findById(leadId);
+    if (!lead) return;
+
+    // 1. Process Email Automations
+    const emailTemplate = await EmailTemplate.findOne({ brokerageId, pipelineStageId });
+    if (emailTemplate && lead.email) {
+      // 15.3 Trigger async email job so provider outage doesn't block stage change
+      await emailQueue.add('send-email', {
+        leadId,
+        brokerageId,
+        subjectTemplate: emailTemplate.subject,
+        bodyTemplate: emailTemplate.body,
+      }, {
+        attempts: 3, // 15.4 Retry where appropriate if provider fails
+        backoff: { type: 'exponential', delay: 2000 },
+      });
+      logger.info(`Email automation queued for Lead ${leadId}`);
+    }
+
+    // 2. Process Task Automations
+    // 16.1 Assigned: Lead's assigned advisor
+    if (lead.assignedAdvisorId) {
+      const taskTemplates = await TaskTemplate.find({ brokerageId, pipelineStageId });
+      
+      if (taskTemplates.length > 0) {
+        const tasksToCreate = taskTemplates.map(template => {
+          const dueAt = new Date();
+          dueAt.setHours(dueAt.getHours() + template.dueInHours); // 16.1 Due calculations
+
+          return {
+            brokerageId,
+            leadId,
+            assignedAdvisorId: lead.assignedAdvisorId,
+            title: template.title,
+            dueAt,
+            status: 'PENDING',
+          };
+        });
+
+        await Task.insertMany(tasksToCreate);
+        logger.info(`${tasksToCreate.length} task automations assigned to Advisor ${lead.assignedAdvisorId} for Lead ${leadId}`);
+      }
+    }
+
+  } catch (err) {
+    logger.error({ err }, 'Critical error executing stage automations');
+    // We explicitly catch and swallow errors here so that automation failures 
+    // never roll back or block the primary pipeline stage movement (Section 15.3).
+  }
+};
