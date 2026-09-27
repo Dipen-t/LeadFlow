@@ -10,6 +10,13 @@ import authRouter from './modules/auth/auth.routes';
 import pipelineRouter from './modules/pipeline/pipeline.routes';
 import leadsRouter from './modules/leads/leads.routes';
 import webhooksRouter from './modules/webhooks/webhooks.routes';
+import clientsRouter from './modules/clients/clients.routes';
+import documentsRouter from './modules/documents/documents.routes';
+
+// Initialize BullMQ Workers (Skip during tests to prevent Redis ECONNREFUSED)
+if (process.env.NODE_ENV !== 'test') {
+  require('./jobs/documentWorker');
+}
 
 const app = express();
 
@@ -55,6 +62,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/pipeline', pipelineRouter);
 app.use('/api/leads', leadsRouter);
 app.use('/api/webhooks', webhooksRouter);
+app.use('/api/clients', clientsRouter);
+app.use('/api/documents', documentsRouter);
 
 // Error Handling
 app.use(errorHandler);
