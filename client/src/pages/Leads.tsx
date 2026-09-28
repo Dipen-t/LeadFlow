@@ -27,6 +27,8 @@ interface PipelineStage {
   order: number;
 }
 
+import { useSocket } from '../hooks/useSocket';
+
 export default function Leads() {
   const [stages, setStages] = useState<PipelineStage[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -34,6 +36,7 @@ export default function Leads() {
   const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
   const [conversionResult, setConversionResult] = useState<{ name: string, password?: string } | null>(null);
   const [hasCopied, setHasCopied] = useState(false);
+  const socket = useSocket();
 
   const handleCopyPassword = () => {
     if (conversionResult?.password) {
@@ -74,12 +77,22 @@ export default function Leads() {
   };
 
   useEffect(() => {
-    let isMounted = true;
-    fetchData().then(() => {
-      if (!isMounted) return;
-    });
-    return () => { isMounted = false; };
+    fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    socket.on('lead.created', fetchData);
+    socket.on('lead.stageChanged', fetchData);
+    socket.on('lead.converted', fetchData);
+    
+    return () => {
+      socket.off('lead.created', fetchData);
+      socket.off('lead.stageChanged', fetchData);
+      socket.off('lead.converted', fetchData);
+    };
+  }, [socket]);
 
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();

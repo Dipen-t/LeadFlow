@@ -8,6 +8,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Input } from '@/components/ui/input';
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
 import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, Clock, Trash2, Key, Eye, EyeOff } from 'lucide-react';
+import { useSocket } from '../hooks/useSocket';
 
 interface Document {
   _id: string;
@@ -32,44 +33,47 @@ export default function ClientPortal() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchPortalData = async () => {
-      try {
-        const clientRes = await api.get('/clients/me');
-        if (!isMounted) return;
-        
-        const client = clientRes.data.data.client;
-        setClientInfo(client);
-        
-        const docsRes = await api.get(`/documents/client/${client._id}`);
-        if (!isMounted) return;
-        
-        setDocuments(docsRes.data.data.documents);
-      } catch (err) {
-        console.error('Failed to load portal data', err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    
-    fetchPortalData();
-    
-    // In a real app we'd attach a socket listener here to listen for document status updates!
-    const interval = setInterval(() => {
-      if (clientInfo) {
-        api.get(`/documents/client/${clientInfo._id}`).then(res => {
-          if (isMounted) setDocuments(res.data.data.documents);
-        });
-      }
-    }, 5000);
+  const socket = useSocket();
 
-    return () => { 
-      isMounted = false;
-      clearInterval(interval);
+  const fetchPortalData = async () => {
+    try {
+      const clientRes = await api.get('/clients/me');
+      const client = clientRes.data.data.client;
+      setClientInfo(client);
+      
+      const docsRes = await api.get(`/documents/client/${client._id}`);
+      setDocuments(docsRes.data.data.documents);
+    } catch (err) {
+      console.error('Failed to load portal data', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPortalData();
+  }, []);
+
+  useEffect(() => {
+    if (!socket || !clientInfo?._id) return;
+
+    const handleDocumentUpdate = () => {
+      // Re-fetch documents whenever a document is updated
+      api.get(`/documents/client/${clientInfo._id}`).then(res => {
+        setDocuments(res.data.data.documents);
+      });
     };
-  }, [clientInfo?._id]);
+
+    socket.on('document.processing', handleDocumentUpdate);
+    socket.on('document.verified', handleDocumentUpdate);
+    socket.on('document.failed', handleDocumentUpdate);
+
+    return () => {
+      socket.off('document.processing', handleDocumentUpdate);
+      socket.off('document.verified', handleDocumentUpdate);
+      socket.off('document.failed', handleDocumentUpdate);
+    };
+  }, [socket, clientInfo?._id]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

@@ -15,6 +15,7 @@ import documentsRouter from './modules/documents/documents.routes';
 import automationsRouter from './modules/automations/automations.routes';
 import tasksRouter from './modules/tasks/tasks.routes';
 import dashboardRouter from './modules/dashboard/dashboard.routes';
+import usersRouter from './modules/users/users.routes';
 
 // Initialize BullMQ Workers (Skip during tests to prevent Redis ECONNREFUSED)
 if (process.env.NODE_ENV !== 'test') {
@@ -71,6 +72,7 @@ app.use('/api/documents', documentsRouter);
 app.use('/api/automations', automationsRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/users', usersRouter);
 
 // Error Handling
 app.use(errorHandler);

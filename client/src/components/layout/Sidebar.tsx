@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, Settings as SettingsIcon, ShieldAlert } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/button';
 
@@ -15,6 +15,10 @@ export default function Sidebar() {
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
     { name: 'Settings', href: '/settings', icon: SettingsIcon },
   ];
+
+  if (user?.role === 'PLATFORM_ADMIN' || user?.role === 'SYSTEM_ADMIN') {
+    navigation.push({ name: 'Users', href: '/users', icon: ShieldAlert });
+  }
 
   return (
     <div className="flex h-full flex-col">
