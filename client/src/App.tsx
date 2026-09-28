@@ -4,6 +4,8 @@ import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
 import Clients from './pages/Clients';
 import ClientPortal from './pages/ClientPortal';
+import Tasks from './pages/Tasks';
+import Settings from './pages/Settings';
 import AdminLayout from './components/layout/AdminLayout';
 import { useAuthStore } from './store/authStore';
 
@@ -41,8 +43,8 @@ function App() {
           <Route path="leads" element={<Leads />} />
           <Route path="clients" element={<Clients />} />
           <Route path="documents" element={<div className="p-4">Documents coming soon</div>} />
-          <Route path="tasks" element={<div className="p-4">Tasks coming soon</div>} />
-          <Route path="settings" element={<div className="p-4">Settings coming soon</div>} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Folders, CheckSquare, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/button';
 
@@ -13,6 +13,7 @@ export default function Sidebar() {
     { name: 'Clients', href: '/clients', icon: Users },
     { name: 'Documents', href: '/documents', icon: Folders },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
+    { name: 'Settings', href: '/settings', icon: SettingsIcon },
   ];
 
   return (
