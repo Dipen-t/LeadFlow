@@ -6,26 +6,47 @@ import { Brokerage } from '../modules/brokerages/brokerage.model';
 async function seed() {
   await mongoose.connect(env.MONGODB_URI);
   
-  let brokerage = await Brokerage.findOne({ name: 'Admin Brokerage' });
+  let brokerage = await Brokerage.findOne({ slug: 'abc-mortgage' });
   if (!brokerage) {
-    brokerage = await Brokerage.create({ name: 'Admin Brokerage', slug: 'admin-brokerage' });
+    brokerage = await Brokerage.create({ name: 'ABC Mortgage', slug: 'abc-mortgage' });
   }
 
-  const existing = await User.findOne({ email: 'admin@leadflow.com' });
-  if (!existing) {
+  // Create Platform Admin (System level)
+  if (!(await User.findOne({ email: 'platform@leadflow.com' }))) {
     await User.create({
-      brokerageId: brokerage._id,
-      name: 'System Admin',
-      email: 'admin@leadflow.com',
+      brokerageId: null, // Platform admins don't belong to a single brokerage
+      name: 'Platform Administrator',
+      email: 'platform@leadflow.com',
       passwordHash: 'password123',
-      role: 'BROKERAGE_ADMIN',
+      role: 'PLATFORM_ADMIN',
     });
-    console.log('Created admin@leadflow.com / password123');
-  } else {
-    console.log('Admin already exists: admin@leadflow.com / password123');
+    console.log('Created platform@leadflow.com / password123 (PLATFORM_ADMIN)');
   }
 
-  // Seed Pipeline Stages
+  // Seed ABC Mortgage Users (Multiple Admins & Advisors under one tenant)
+  const seedUsers = [
+    { email: 'admin1@abc.com', name: 'Admin One', role: 'BROKERAGE_ADMIN' },
+    { email: 'admin2@abc.com', name: 'Admin Two', role: 'BROKERAGE_ADMIN' },
+    { email: 'advisor1@abc.com', name: 'Advisor One', role: 'ADVISOR' },
+    { email: 'advisor2@abc.com', name: 'Advisor Two', role: 'ADVISOR' },
+    { email: 'advisor3@abc.com', name: 'Advisor Three', role: 'ADVISOR' },
+  ];
+
+  for (const u of seedUsers) {
+    const exists = await User.findOne({ email: u.email });
+    if (!exists) {
+      await User.create({
+        brokerageId: brokerage._id,
+        name: u.name,
+        email: u.email,
+        passwordHash: 'password123',
+        role: u.role,
+      });
+      console.log(`Created ${u.email} / password123 (${u.role}) under ABC Mortgage`);
+    } else {
+      console.log(`User already exists: ${u.email}`);
+    }
+  }
   const { PipelineStage } = require('../modules/pipeline/pipelineStage.model');
   const stageCount = await PipelineStage.countDocuments({ brokerageId: brokerage._id });
   if (stageCount === 0) {

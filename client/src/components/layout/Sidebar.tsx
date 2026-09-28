@@ -13,11 +13,14 @@ export default function Sidebar() {
     { name: 'Clients', href: '/clients', icon: Users },
     { name: 'Documents', href: '/documents', icon: Folders },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
-    { name: 'Settings', href: '/settings', icon: SettingsIcon },
   ];
 
-  if (user?.role === 'PLATFORM_ADMIN' || user?.role === 'SYSTEM_ADMIN') {
-    navigation.push({ name: 'Users', href: '/users', icon: ShieldAlert });
+  if (user?.role !== 'ADVISOR' && user?.role !== 'CLIENT') {
+    navigation.push({ name: 'Settings', href: '/settings', icon: SettingsIcon });
+  }
+
+  if (user?.role === 'PLATFORM_ADMIN' || user?.role === 'SYSTEM_ADMIN' || user?.role === 'BROKERAGE_ADMIN') {
+    navigation.push({ name: user?.role === 'BROKERAGE_ADMIN' ? 'Users' : 'Platform', href: '/users', icon: ShieldAlert });
   }
 
   return (

@@ -20,6 +20,10 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
       throw new AppError('File is required', 400);
     }
 
+    if (req.user?.role !== 'CLIENT') {
+      throw new AppError('Only clients are permitted to upload documents', 403);
+    }
+
     // 1. Verify Client belongs to this exact brokerage
     const client = await Client.findOne({ _id: clientId, brokerageId });
     if (!client) {
@@ -63,6 +67,17 @@ export const getClientDocuments = async (req: Request, res: Response, next: Next
     const brokerageId = req.user?.brokerageId;
     const { clientId } = req.params;
 
+    // Verify advisor permission
+    if (req.user?.role === 'ADVISOR') {
+      const client = await Client.findOne({ _id: clientId, brokerageId });
+      if (!client) throw new NotFoundError('Client not found');
+      
+      const lead = await Lead.findOne({ _id: client.leadId, assignedAdvisorId: req.user.userId });
+      if (!lead) {
+        throw new AppError('Not authorized to view documents for this client', 403);
+      }
+    }
+
     const documents = await Document.find({ clientId, brokerageId }).sort({ uploadedAt: -1 });
 
     res.json({
@@ -76,9 +91,16 @@ export const getClientDocuments = async (req: Request, res: Response, next: Next
 
 export const getAllDocuments = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const query = req.user?.role === 'SYSTEM_ADMIN' 
-      ? {} 
-      : { brokerageId: req.user?.brokerageId };
+    let query: any = {};
+    if (req.user?.role !== 'SYSTEM_ADMIN') {
+      query.brokerageId = req.user?.brokerageId;
+    }
+
+    if (req.user?.role === 'ADVISOR') {
+      const myLeads = await Lead.find({ brokerageId: req.user.brokerageId, assignedAdvisorId: req.user.userId });
+      const myClients = await Client.find({ leadId: { $in: myLeads.map(l => l._id) } });
+      query.clientId = { $in: myClients.map(c => c._id) };
+    }
 
     const documents = await Document.find(query)
       .sort({ uploadedAt: -1 })
