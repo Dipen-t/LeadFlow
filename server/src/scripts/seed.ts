@@ -24,6 +24,23 @@ async function seed() {
   } else {
     console.log('Admin already exists: admin@leadflow.com / password123');
   }
+
+  // Seed Pipeline Stages
+  const { PipelineStage } = require('../modules/pipeline/pipelineStage.model');
+  const stageCount = await PipelineStage.countDocuments({ brokerageId: brokerage._id });
+  if (stageCount === 0) {
+    await PipelineStage.insertMany([
+      { brokerageId: brokerage._id, name: 'New', order: 0, category: 'OPEN' },
+      { brokerageId: brokerage._id, name: 'Contacted', order: 1, category: 'OPEN' },
+      { brokerageId: brokerage._id, name: 'Qualified', order: 2, category: 'OPEN' },
+      { brokerageId: brokerage._id, name: 'Application', order: 3, category: 'OPEN' },
+      { brokerageId: brokerage._id, name: 'Won', order: 4, category: 'WON' },
+      { brokerageId: brokerage._id, name: 'Lost', order: 5, category: 'LOST' },
+    ]);
+    console.log('Created Pipeline Stages');
+  } else {
+    console.log('Pipeline stages already exist');
+  }
   
   process.exit(0);
 }

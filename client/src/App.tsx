@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Leads from './pages/Leads';
+import Clients from './pages/Clients';
+import ClientPortal from './pages/ClientPortal';
 import AdminLayout from './components/layout/AdminLayout';
 import { useAuthStore } from './store/authStore';
 
@@ -18,6 +21,12 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         
+        <Route path="/client-portal" element={
+          <ProtectedRoute>
+            <ClientPortal />
+          </ProtectedRoute>
+        } />
+
         {/* Protected Routes wrapped in AdminLayout */}
         <Route 
           path="/" 
@@ -29,8 +38,8 @@ function App() {
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-          {/* We will add more routes like /leads, /tasks here later */}
-          <Route path="leads" element={<div className="p-4">Leads coming soon</div>} />
+          <Route path="leads" element={<Leads />} />
+          <Route path="clients" element={<Clients />} />
           <Route path="documents" element={<div className="p-4">Documents coming soon</div>} />
           <Route path="tasks" element={<div className="p-4">Tasks coming soon</div>} />
           <Route path="settings" element={<div className="p-4">Settings coming soon</div>} />

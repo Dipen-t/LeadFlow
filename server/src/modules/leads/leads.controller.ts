@@ -11,6 +11,15 @@ const updateStageSchema = z.object({
   version: z.number().int().min(0),
 });
 
+const createLeadSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  source: z.string().default('Manual'),
+  pipelineStageId: z.string().min(24),
+});
+
 export const getLeads = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const brokerageId = req.user?.brokerageId;
@@ -28,6 +37,28 @@ export const getLeads = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
+export const createLead = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const brokerageId = req.user?.brokerageId;
+    const data = createLeadSchema.parse(req.body);
+
+    const lead = await Lead.create({
+      brokerageId,
+      ...data,
+      externalId: `manual_${Date.now()}` // Fake external ID since it's manual
+    });
+
+    broadcastToBrokerage(brokerageId, 'lead.created', { lead });
+
+    res.status(201).json({
+      status: 'success',
+      data: { lead },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const moveLeadStage = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const brokerageId = req.user?.brokerageId;
@@ -39,16 +70,15 @@ export const moveLeadStage = async (req: Request, res: Response, next: NextFunct
       throw new NotFoundError('Lead not found');
     }
 
-    if (lead.version !== version) {
-      // 409 Conflict logic
+    if (lead.__v !== version) {
       throw new AppError('The lead was modified by another user. Please refresh to get the latest state.', 409);
     }
 
     const previousStageId = lead.pipelineStageId.toString();
 
     lead.pipelineStageId = pipelineStageId as any;
-    lead.version = version + 1; // Increment version for next optimistic concurrency check
-
+    
+    // Mongoose handles __v incrementing automatically on save when optimisticConcurrency is true.
     await lead.save();
 
     // Trigger automations if the stage actually changed
