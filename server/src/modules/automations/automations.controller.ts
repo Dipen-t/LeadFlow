@@ -67,3 +67,19 @@ export const getAutomationsByStage = async (req: Request, res: Response, next: N
     next(err);
   }
 };
+
+export const deleteTaskTemplate = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const brokerageId = req.user?.brokerageId;
+    const { id } = req.params;
+
+    const template = await TaskTemplate.findOneAndDelete({ _id: id, brokerageId });
+    if (!template) {
+      throw new NotFoundError('Task template not found');
+    }
+
+    res.json({ status: 'success', data: null });
+  } catch (err) {
+    next(err);
+  }
+};
