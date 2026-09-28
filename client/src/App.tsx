@@ -1,17 +1,18 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Leads from './pages/Leads';
-import Clients from './pages/Clients';
-import Documents from './pages/Documents';
+import Leads from './pages/leads';
+import Clients from './pages/clients';
+import Documents from './pages/documents';
 import ClientPortal from './pages/ClientPortal';
-import Tasks from './pages/Tasks';
+import Tasks from './pages/tasks';
 import Settings from './pages/Settings';
-import Users from './pages/Users';
+import Users from './pages/users';
 import AdminLayout from './components/layout/AdminLayout';
 import { useAuthStore } from './store/authStore';
 
-function ProtectedRoute({ children }: { children: JSX.Element }) {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

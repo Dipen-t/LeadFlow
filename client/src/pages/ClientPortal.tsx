@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
-import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, Clock, Trash2, Key, Eye, EyeOff } from 'lucide-react';
+import { PasswordInput } from '@/components/ui/PasswordInput';
+import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, Clock, Trash2, Key } from 'lucide-react';
 import { useSocket } from '../hooks/useSocket';
 
 interface Document {
@@ -31,7 +32,6 @@ export default function ClientPortal() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
 
   const socket = useSocket();
 
@@ -202,65 +202,32 @@ export default function ClientPortal() {
                   <FieldGroup>
                     <Field>
                       <FieldLabel htmlFor="currentPassword">Current Password</FieldLabel>
-                      <div className="relative">
-                        <Input 
-                          id="currentPassword" 
-                          type={showPasswords.current ? 'text' : 'password'} 
-                          value={passwordData.currentPassword} 
-                          onChange={e => setPasswordData(p => ({...p, currentPassword: e.target.value}))} 
-                          required 
-                          className="pr-10"
-                        />
-                        <button 
-                          type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                          onClick={() => setShowPasswords(p => ({ ...p, current: !p.current }))}
-                        >
-                          {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
+                      <PasswordInput 
+                        id="currentPassword" 
+                        value={passwordData.currentPassword} 
+                        onChange={e => setPasswordData(p => ({...p, currentPassword: e.target.value}))} 
+                        required 
+                      />
                     </Field>
                     <Field>
                       <FieldLabel htmlFor="newPassword">New Password</FieldLabel>
-                      <div className="relative">
-                        <Input 
-                          id="newPassword" 
-                          type={showPasswords.new ? 'text' : 'password'} 
-                          value={passwordData.newPassword} 
-                          onChange={e => setPasswordData(p => ({...p, newPassword: e.target.value}))} 
-                          required 
-                          minLength={6}
-                          className="pr-10"
-                        />
-                        <button 
-                          type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                          onClick={() => setShowPasswords(p => ({ ...p, new: !p.new }))}
-                        >
-                          {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
+                      <PasswordInput 
+                        id="newPassword" 
+                        value={passwordData.newPassword} 
+                        onChange={e => setPasswordData(p => ({...p, newPassword: e.target.value}))} 
+                        required 
+                        minLength={6}
+                      />
                     </Field>
                     <Field>
                       <FieldLabel htmlFor="confirmPassword">Confirm New Password</FieldLabel>
-                      <div className="relative">
-                        <Input 
-                          id="confirmPassword" 
-                          type={showPasswords.confirm ? 'text' : 'password'} 
-                          value={passwordData.confirmPassword} 
-                          onChange={e => setPasswordData(p => ({...p, confirmPassword: e.target.value}))} 
-                          required 
-                          minLength={6}
-                          className="pr-10"
-                        />
-                        <button 
-                          type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
-                          onClick={() => setShowPasswords(p => ({ ...p, confirm: !p.confirm }))}
-                        >
-                          {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
+                      <PasswordInput 
+                        id="confirmPassword" 
+                        value={passwordData.confirmPassword} 
+                        onChange={e => setPasswordData(p => ({...p, confirmPassword: e.target.value}))} 
+                        required 
+                        minLength={6}
+                      />
                     </Field>
                   </FieldGroup>
                   <DialogFooter>
