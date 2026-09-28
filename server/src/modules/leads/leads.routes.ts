@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getLeads, moveLeadStage, createLead } from './leads.controller';
+import { getLeads, moveLeadStage, createLead, assignLead } from './leads.controller';
 import { authenticate, requireRole } from '../../middleware/authHandler';
 import { requireBrokerage } from '../../middleware/tenantHandler';
 
@@ -10,6 +10,7 @@ router.use(authenticate, requireBrokerage);
 
 router.get('/', requireRole(['BROKERAGE_ADMIN', 'ADVISOR']), getLeads);
 router.post('/', requireRole(['BROKERAGE_ADMIN', 'ADVISOR']), createLead);
+router.post('/:id/assign', requireRole(['BROKERAGE_ADMIN']), assignLead);
 router.patch('/:id/stage', requireRole(['BROKERAGE_ADMIN', 'ADVISOR']), moveLeadStage);
 
 export default router;

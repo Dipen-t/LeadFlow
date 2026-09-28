@@ -3,9 +3,11 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
 import Clients from './pages/Clients';
+import Documents from './pages/Documents';
 import ClientPortal from './pages/ClientPortal';
 import Tasks from './pages/Tasks';
 import Settings from './pages/Settings';
+import Users from './pages/Users';
 import AdminLayout from './components/layout/AdminLayout';
 import { useAuthStore } from './store/authStore';
 
@@ -42,9 +44,10 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="leads" element={<Leads />} />
           <Route path="clients" element={<Clients />} />
-          <Route path="documents" element={<div className="p-4">Documents coming soon</div>} />
+          <Route path="documents" element={<Documents />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="users" element={<Users />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

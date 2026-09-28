@@ -18,6 +18,7 @@ interface Lead {
   email: string;
   phone?: string;
   pipelineStageId: string;
+  assignedAdvisorId?: string;
   __v: number;
 }
 
@@ -27,13 +28,19 @@ interface PipelineStage {
   order: number;
 }
 
+import { useSocket } from '../hooks/useSocket';
+import { useAuthStore } from '../store/authStore';
+
 export default function Leads() {
+  const user = useAuthStore(state => state.user);
   const [stages, setStages] = useState<PipelineStage[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [advisors, setAdvisors] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
   const [conversionResult, setConversionResult] = useState<{ name: string, password?: string } | null>(null);
   const [hasCopied, setHasCopied] = useState(false);
+  const socket = useSocket();
 
   const handleCopyPassword = () => {
     if (conversionResult?.password) {
@@ -56,13 +63,25 @@ export default function Leads() {
 
   const fetchData = async () => {
     try {
-      const [stagesRes, leadsRes] = await Promise.all([
+      const promises: Promise<any>[] = [
         api.get('/pipeline/stages'),
         api.get('/leads')
-      ]);
-      const fetchedStages = stagesRes.data.data.stages;
+      ];
+
+      if (user?.role === 'BROKERAGE_ADMIN') {
+        promises.push(api.get('/users'));
+      }
+
+      const results = await Promise.all(promises);
+      const fetchedStages = results[0].data.data.stages;
       setStages(fetchedStages);
-      setLeads(leadsRes.data.data.leads);
+      setLeads(results[1].data.data.leads);
+      
+      if (user?.role === 'BROKERAGE_ADMIN' && results[2]) {
+        const fetchedUsers = results[2].data.data.users;
+        setAdvisors(fetchedUsers.filter((u: any) => u.role === 'ADVISOR' && u.status === 'ACTIVE'));
+      }
+
       if (fetchedStages.length > 0 && !formData.pipelineStageId) {
         setFormData(prev => ({ ...prev, pipelineStageId: fetchedStages[0]._id }));
       }
@@ -74,12 +93,24 @@ export default function Leads() {
   };
 
   useEffect(() => {
-    let isMounted = true;
-    fetchData().then(() => {
-      if (!isMounted) return;
-    });
-    return () => { isMounted = false; };
+    fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    socket.on('lead.created', fetchData);
+    socket.on('lead.stageChanged', fetchData);
+    socket.on('lead.converted', fetchData);
+    socket.on('lead.assigned', fetchData);
+    
+    return () => {
+      socket.off('lead.created', fetchData);
+      socket.off('lead.stageChanged', fetchData);
+      socket.off('lead.converted', fetchData);
+      socket.off('lead.assigned', fetchData);
+    };
+  }, [socket]);
 
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +147,19 @@ export default function Leads() {
       // Revert on error
       const leadsRes = await api.get('/leads');
       setLeads(leadsRes.data.data.leads);
+    }
+  };
+
+  const handleAssignLead = async (lead: Lead, advisorId: string) => {
+    try {
+      const res = await api.post(`/leads/${lead._id}/assign`, {
+        advisorId: advisorId || null
+      });
+      
+      const updatedLead = res.data.data.lead;
+      setLeads(prev => prev.map(l => l._id === lead._id ? updatedLead : l));
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to assign lead');
     }
   };
 
@@ -314,6 +358,22 @@ export default function Leads() {
                                           ))}
                                         </select>
                                       </div>
+                                      
+                                      {user?.role === 'BROKERAGE_ADMIN' && (
+                                        <div className="mt-2 pt-2 border-t flex justify-between items-center">
+                                          <span className="text-[10px] text-muted-foreground uppercase font-semibold">Assign to:</span>
+                                          <select 
+                                            className="text-xs bg-transparent border-none p-0 focus:ring-0 cursor-pointer max-w-[120px] truncate"
+                                            value={lead.assignedAdvisorId || ''}
+                                            onChange={(e) => handleAssignLead(lead, e.target.value)}
+                                          >
+                                            <option value="">Unassigned</option>
+                                            {advisors.map(a => (
+                                              <option key={a._id} value={a._id}>{a.name}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                      )}
                                       <div className="mt-2 text-right">
                                         <Button variant="outline" size="sm" className="h-6 text-[10px] w-full" onClick={() => handleConvertLead(lead)}>
                                           Convert to Client
@@ -369,6 +429,18 @@ export default function Leads() {
                           <option key={s._id} value={s._id}>{s.name}</option>
                         ))}
                       </select>
+                      {user?.role === 'BROKERAGE_ADMIN' && (
+                        <select 
+                          className="text-sm bg-transparent border rounded p-1 max-w-[150px] truncate ml-2"
+                          value={lead.assignedAdvisorId || ''}
+                          onChange={(e) => handleAssignLead(lead, e.target.value)}
+                        >
+                          <option value="">Unassigned</option>
+                          {advisors.map(a => (
+                            <option key={a._id} value={a._id}>{a.name}</option>
+                          ))}
+                        </select>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" onClick={() => handleConvertLead(lead)}>
