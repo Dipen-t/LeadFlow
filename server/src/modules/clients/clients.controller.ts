@@ -113,3 +113,22 @@ export const getClients = async (req: Request, res: Response, next: NextFunction
     next(err);
   }
 };
+
+export const getMyClient = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const brokerageId = req.user?.brokerageId;
+    const userId = req.user?.userId;
+    
+    const client = await Client.findOne({ userId, brokerageId });
+    if (!client) {
+      throw new NotFoundError('Client record not found for this user');
+    }
+    
+    res.json({
+      status: 'success',
+      data: { client },
+    });
+  } catch (err) {
+    next(err);
+  }
+};

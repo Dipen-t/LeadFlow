@@ -10,6 +10,7 @@ export default function Sidebar() {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Leads', href: '/leads', icon: Users },
+    { name: 'Clients', href: '/clients', icon: Users },
     { name: 'Documents', href: '/documents', icon: Folders },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
   ];

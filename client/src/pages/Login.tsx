@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { api } from '../lib/axios';
 export default function Login() {
   const [email, setEmail] = useState('admin@leadflow.com');
   const [password, setPassword] = useState('password123');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -26,7 +28,11 @@ export default function Login() {
       if (res.data.status === 'success') {
         const { token, user } = res.data.data;
         login(token, user);
-        navigate('/dashboard'); 
+        if (user.role === 'CLIENT') {
+          navigate('/client-portal');
+        } else {
+          navigate('/dashboard'); 
+        }
       }
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Login failed');
@@ -61,13 +67,23 @@ export default function Login() {
                   <FieldLabel htmlFor="password">Password</FieldLabel>
                   <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
                 </div>
-                <Input 
-                  id="password" 
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required 
-                />
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required 
+                    className="pr-10"
+                  />
+                  <button 
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </Field>
             </FieldGroup>
             {error && <div className="text-sm text-red-500 font-medium">{error}</div>}

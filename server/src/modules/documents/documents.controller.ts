@@ -73,3 +73,22 @@ export const getClientDocuments = async (req: Request, res: Response, next: Next
     next(err);
   }
 };
+
+export const deleteDocument = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const brokerageId = req.user?.brokerageId;
+    const { documentId } = req.params;
+
+    const doc = await Document.findOneAndDelete({ _id: documentId, brokerageId });
+    if (!doc) {
+      throw new NotFoundError('Document not found');
+    }
+
+    res.json({
+      status: 'success',
+      data: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

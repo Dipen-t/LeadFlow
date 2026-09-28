@@ -83,3 +83,35 @@ export const logout = (req: Request, res: Response) => {
     message: 'Logged out successfully',
   });
 };
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string(),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+export const changePassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.userId;
+    const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
+
+    const user = await User.findById(userId).select('+passwordHash');
+    if (!user) {
+      throw new UnauthorizedError('User not found');
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      throw new UnauthorizedError('Incorrect current password');
+    }
+
+    user.passwordHash = newPassword;
+    await user.save();
+
+    res.json({
+      status: 'success',
+      message: 'Password changed successfully',
+    });
+  } catch (err) {
+    next(err);
+  }
+};

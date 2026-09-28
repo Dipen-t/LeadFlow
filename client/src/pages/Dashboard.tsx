@@ -13,6 +13,8 @@ interface DashboardMetrics {
   overdueTasks: number;
 }
 
+import { Loader } from '@/components/ui/loader';
+
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,14 +34,7 @@ export default function Dashboard() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-8 w-8 bg-primary/20 rounded-full mb-4"></div>
-          <div className="text-muted-foreground">Loading metrics...</div>
-        </div>
-      </div>
-    );
+    return <Loader message="Loading dashboard metrics..." />;
   }
 
   if (!metrics) {
