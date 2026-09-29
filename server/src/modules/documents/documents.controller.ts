@@ -25,10 +25,14 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
       throw new AppError('Only clients are permitted to upload documents', 403);
     }
 
-    // 1. Verify Client belongs to this exact brokerage
+    // 1. Verify Client belongs to this exact brokerage and matches the user if they are a CLIENT
     const client = await Client.findOne({ _id: clientId, brokerageId });
     if (!client) {
       throw new NotFoundError('Client not found');
+    }
+    
+    if (client.userId.toString() !== req.user?.userId) {
+      throw new AppError('Not authorized to upload documents for this client', 403);
     }
 
     // 2. Create Document persistent record tracking Cloudinary URL
@@ -69,8 +73,11 @@ export const getClientDocuments = async (req: Request, res: Response, next: Next
     const { clientId } = req.params;
 
     // Verify client permission
-    if (req.user?.role === 'CLIENT' && clientId !== req.user.userId) {
-      throw new AppError('Not authorized to view documents for this client', 403);
+    if (req.user?.role === 'CLIENT') {
+      const clientRecord = await Client.findOne({ _id: clientId, userId: req.user.userId });
+      if (!clientRecord) {
+        throw new AppError('Not authorized to view documents for this client', 403);
+      }
     }
 
     // Verify advisor permission
@@ -129,7 +136,12 @@ export const deleteDocument = async (req: Request, res: Response, next: NextFunc
       : { _id: documentId, brokerageId: req.user?.brokerageId };
 
     if (req.user?.role === 'CLIENT') {
-      query.clientId = req.user.userId;
+      const clientRecord = await Client.findOne({ userId: req.user.userId });
+      if (clientRecord) {
+        query.clientId = clientRecord._id;
+      } else {
+        throw new NotFoundError('Document not found');
+      }
     }
 
     const doc = await Document.findOneAndDelete(query);
@@ -154,7 +166,12 @@ export const downloadDocument = async (req: Request, res: Response, next: NextFu
       : { _id: documentId, brokerageId: req.user?.brokerageId };
 
     if (req.user?.role === 'CLIENT') {
-      query.clientId = req.user.userId;
+      const clientRecord = await Client.findOne({ userId: req.user.userId });
+      if (clientRecord) {
+        query.clientId = clientRecord._id;
+      } else {
+        throw new NotFoundError('Document not found');
+      }
     }
 
     const doc = await Document.findOne(query);
