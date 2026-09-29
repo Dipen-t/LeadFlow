@@ -98,7 +98,7 @@ export const getClientDocuments = async (req: Request, res: Response, next: Next
 export const getAllDocuments = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let query: any = {};
-    if (req.user?.role !== 'SYSTEM_ADMIN') {
+    if (req.user?.role !== 'PLATFORM_ADMIN') {
       query.brokerageId = req.user?.brokerageId;
     }
 
@@ -124,7 +124,7 @@ export const getAllDocuments = async (req: Request, res: Response, next: NextFun
 export const deleteDocument = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { documentId } = req.params;
-    const query: any = req.user?.role === 'SYSTEM_ADMIN' 
+    const query: any = req.user?.role === 'PLATFORM_ADMIN' 
       ? { _id: documentId } 
       : { _id: documentId, brokerageId: req.user?.brokerageId };
 
@@ -149,7 +149,7 @@ export const deleteDocument = async (req: Request, res: Response, next: NextFunc
 export const downloadDocument = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { documentId } = req.params;
-    const query: any = req.user?.role === 'SYSTEM_ADMIN' 
+    const query: any = req.user?.role === 'PLATFORM_ADMIN' 
       ? { _id: documentId } 
       : { _id: documentId, brokerageId: req.user?.brokerageId };
 

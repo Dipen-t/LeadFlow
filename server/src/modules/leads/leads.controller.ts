@@ -60,7 +60,7 @@ export const createLead = async (req: Request, res: Response, next: NextFunction
 
     const lead = await Lead.create(leadData);
 
-    broadcastToBrokerage(brokerageId, 'lead.created', { lead });
+    broadcastToBrokerage(brokerageId as string, 'lead.created', { lead });
 
     res.status(201).json({
       status: 'success',
@@ -101,11 +101,10 @@ export const moveLeadStage = async (req: Request, res: Response, next: NextFunct
     // Trigger automations if the stage actually changed
     if (previousStageId !== pipelineStageId) {
       // 15.3 & 16.2 Pipeline Trigger: We explicitly do NOT await this. 
-      // It executes fully out-of-band so provider delays/outages never block the HTTP response!
-      triggerStageAutomations(brokerageId, lead.pipelineStageId, lead._id);
+      triggerStageAutomations(brokerageId as string, lead.pipelineStageId as any, lead._id as any);
     }
 
-    broadcastToBrokerage(brokerageId, 'lead.stageChanged', { lead });
+    broadcastToBrokerage(brokerageId as string, 'lead.stageChanged', { lead });
     logger.info({ event: 'lead.stage_changed', leadId: lead._id, stageId: pipelineStageId }, 'Lead moved to a new stage');
 
     res.json({
@@ -146,10 +145,10 @@ export const assignLead = async (req: Request, res: Response, next: NextFunction
 
     // If assigned for the first time, trigger automations for the current stage
     if (!previousAdvisorId && advisorId) {
-      triggerStageAutomations(brokerageId, lead.pipelineStageId, lead._id);
+      triggerStageAutomations(brokerageId as string, lead.pipelineStageId as any, lead._id as any);
     }
 
-    broadcastToBrokerage(brokerageId, 'lead.assigned', { lead });
+    broadcastToBrokerage(brokerageId as string, 'lead.assigned', { lead });
     logger.info({ event: 'lead.assigned', leadId: lead._id, advisorId }, 'Lead assigned to advisor');
 
     res.json({

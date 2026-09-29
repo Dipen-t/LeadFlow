@@ -126,7 +126,7 @@ export default function Settings() {
   };
 
   if (isLoading) return <Loader message="Loading settings..." />;
-  if (user?.role !== 'BROKERAGE_ADMIN' && user?.role !== 'SYSTEM_ADMIN') {
+  if (user?.role !== 'BROKERAGE_ADMIN' && user?.role !== 'PLATFORM_ADMIN') {
     return <div className="p-8 text-center text-red-500">You do not have permission to view this page.</div>;
   }
 

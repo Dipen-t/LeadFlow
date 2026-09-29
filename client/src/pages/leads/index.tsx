@@ -159,7 +159,9 @@ export default function Leads() {
             </TabsList>
           </Tabs>
 
-          <LeadForm stages={stages} onSubmit={handleCreateLead} />
+          {user?.role === 'BROKERAGE_ADMIN' && (
+            <LeadForm stages={stages} onSubmit={handleCreateLead} />
+          )}
         </div>
       </div>
 

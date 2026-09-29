@@ -41,7 +41,7 @@ export default function Users() {
     try {
       const [fetchedUsers, fetchedBrokerages] = await Promise.all([
         fetchUsersAPI(),
-        (currentUserRole === 'PLATFORM_ADMIN' || currentUserRole === 'SYSTEM_ADMIN') 
+        (currentUserRole === 'PLATFORM_ADMIN') 
           ? fetchBrokeragesAPI() 
           : Promise.resolve([])
       ]);
@@ -55,7 +55,7 @@ export default function Users() {
   };
 
   useEffect(() => {
-    if (currentUserRole === 'PLATFORM_ADMIN' || currentUserRole === 'SYSTEM_ADMIN' || currentUserRole === 'BROKERAGE_ADMIN') {
+    if (currentUserRole === 'PLATFORM_ADMIN' || currentUserRole === 'BROKERAGE_ADMIN') {
       fetchData();
     } else {
       setIsLoading(false);
@@ -124,7 +124,7 @@ export default function Users() {
     }
   };
 
-  if (currentUserRole !== 'PLATFORM_ADMIN' && currentUserRole !== 'SYSTEM_ADMIN' && currentUserRole !== 'BROKERAGE_ADMIN') {
+  if (currentUserRole !== 'PLATFORM_ADMIN' && currentUserRole !== 'BROKERAGE_ADMIN') {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
         <ShieldAlert className="h-16 w-16 text-red-500 mb-4" />
@@ -134,7 +134,7 @@ export default function Users() {
     );
   }
 
-  const isPlatformAdmin = currentUserRole === 'PLATFORM_ADMIN' || currentUserRole === 'SYSTEM_ADMIN';
+  const isPlatformAdmin = currentUserRole === 'PLATFORM_ADMIN';
 
   if (isLoading) return <Loader message="Loading users..." />;
 

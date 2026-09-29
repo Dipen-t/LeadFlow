@@ -19,7 +19,7 @@ export default function Sidebar() {
     navigation.push({ name: 'Automations', href: '/settings', icon: Zap });
   }
 
-  if (user?.role === 'PLATFORM_ADMIN' || user?.role === 'SYSTEM_ADMIN' || user?.role === 'BROKERAGE_ADMIN') {
+  if (user?.role === 'PLATFORM_ADMIN' || user?.role === 'BROKERAGE_ADMIN') {
     navigation.push({ name: user?.role === 'BROKERAGE_ADMIN' ? 'Users' : 'Platform', href: '/users', icon: ShieldAlert });
   }
 
