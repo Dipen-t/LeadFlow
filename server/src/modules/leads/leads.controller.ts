@@ -53,10 +53,7 @@ export const createLead = async (req: Request, res: Response, next: NextFunction
       externalId: `manual_${Date.now()}` // Fake external ID since it's manual
     };
 
-    // If an ADVISOR creates a lead, it's automatically assigned to them
-    if (req.user?.role === 'ADVISOR') {
-      leadData.assignedAdvisorId = req.user.userId;
-    }
+
 
     const lead = await Lead.create(leadData);
 
