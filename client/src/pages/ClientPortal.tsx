@@ -99,7 +99,7 @@ export default function ClientPortal() {
     setIsUploading(true);
 
     try {
-      await Promise.all(selectedFiles.map(async (selectedFile) => {
+      const results = await Promise.allSettled(selectedFiles.map(async (selectedFile) => {
         const formData = new FormData();
         formData.append('document', selectedFile.file);
         formData.append('clientId', clientInfo._id);
@@ -115,14 +115,25 @@ export default function ClientPortal() {
             }
           }
         });
+        return selectedFile.id;
       }));
-      // Clear all and refresh
-      setSelectedFiles([]);
+
+      const successfulIds = results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => (r as PromiseFulfilledResult<string>).value);
+      const failedCount = results.filter(r => r.status === 'rejected').length;
+
+      // Clear only successful files
+      setSelectedFiles(prev => prev.filter(f => !successfulIds.includes(f.id)));
+      
       const docsRes = await api.get(`/documents/client/${clientInfo._id}`);
       setDocuments(docsRes.data.data.documents);
+
+      if (failedCount > 0) {
+        alert(`Failed to upload ${failedCount} document(s). They might be too large or invalid.`);
+      }
     } catch (err) {
-      console.error('Failed to upload', err);
-      alert('Failed to upload some documents. They might be too large or invalid.');
+      console.error('Unexpected error during upload', err);
     } finally {
       setIsUploading(false);
     }
