@@ -8,10 +8,13 @@ export const getMyTasks = async (req: Request, res: Response, next: NextFunction
     const userId = req.user?.userId;
     const { status } = req.query; // 'PENDING' | 'COMPLETED'
 
-    const filter: any = { brokerageId, assignedAdvisorId: userId };
+    const filter: any = { brokerageId };
+    if (req.user?.role === 'ADVISOR') {
+      filter.assignedAdvisorId = userId;
+    }
     if (status) filter.status = status;
 
-    const tasks = await Task.find(filter).sort({ dueAt: 1 }).populate('leadId', 'firstName lastName');
+    const tasks = await Task.find(filter).sort({ dueAt: 1 }).populate('leadId', 'firstName lastName').populate('assignedAdvisorId', 'name');
 
     // 16.3 Overdue Task Logic
     const now = new Date();
@@ -38,8 +41,13 @@ export const completeTask = async (req: Request, res: Response, next: NextFuncti
     const userId = req.user?.userId;
     const { id } = req.params;
 
+    const query: any = { _id: id, brokerageId };
+    if (req.user?.role === 'ADVISOR') {
+      query.assignedAdvisorId = userId;
+    }
+
     const task = await Task.findOneAndUpdate(
-      { _id: id, brokerageId, assignedAdvisorId: userId },
+      query,
       { status: 'COMPLETED' },
       { new: true }
     );

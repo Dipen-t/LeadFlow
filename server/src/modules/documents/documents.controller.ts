@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Document } from './document.model';
 import { Client } from '../clients/client.model';
+import { Lead } from '../leads/lead.model';
 import { documentQueue } from '../../jobs/documentQueue';
 import { NotFoundError, AppError } from '../../utils/errors';
 import { z } from 'zod';
@@ -67,6 +68,11 @@ export const getClientDocuments = async (req: Request, res: Response, next: Next
     const brokerageId = req.user?.brokerageId;
     const { clientId } = req.params;
 
+    // Verify client permission
+    if (req.user?.role === 'CLIENT' && clientId !== req.user.userId) {
+      throw new AppError('Not authorized to view documents for this client', 403);
+    }
+
     // Verify advisor permission
     if (req.user?.role === 'ADVISOR') {
       const client = await Client.findOne({ _id: clientId, brokerageId });
@@ -118,9 +124,13 @@ export const getAllDocuments = async (req: Request, res: Response, next: NextFun
 export const deleteDocument = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { documentId } = req.params;
-    const query = req.user?.role === 'SYSTEM_ADMIN' 
+    const query: any = req.user?.role === 'SYSTEM_ADMIN' 
       ? { _id: documentId } 
       : { _id: documentId, brokerageId: req.user?.brokerageId };
+
+    if (req.user?.role === 'CLIENT') {
+      query.clientId = req.user.userId;
+    }
 
     const doc = await Document.findOneAndDelete(query);
     if (!doc) {
@@ -139,9 +149,13 @@ export const deleteDocument = async (req: Request, res: Response, next: NextFunc
 export const downloadDocument = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { documentId } = req.params;
-    const query = req.user?.role === 'SYSTEM_ADMIN' 
+    const query: any = req.user?.role === 'SYSTEM_ADMIN' 
       ? { _id: documentId } 
       : { _id: documentId, brokerageId: req.user?.brokerageId };
+
+    if (req.user?.role === 'CLIENT') {
+      query.clientId = req.user.userId;
+    }
 
     const doc = await Document.findOne(query);
     if (!doc) {

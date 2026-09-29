@@ -3,6 +3,7 @@ export interface Task {
   title: string;
   dueAt: string;
   status: 'PENDING' | 'COMPLETED';
-  leadId: string;
+  leadId: string | any;
+  assignedAdvisorId?: { _id: string; name: string };
   createdAt: string;
 }
