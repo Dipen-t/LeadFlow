@@ -8,7 +8,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/PasswordInput';
-import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, Clock, Trash2, Key, Loader2 } from 'lucide-react';
+import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, Clock, Trash2, Key, Loader2, Download } from 'lucide-react';
 import { useSocket } from '../hooks/useSocket';
 
 interface Document {
@@ -118,6 +118,7 @@ export default function ClientPortal() {
           formData.append('clientId', clientInfo._id);
           
           await api.post('/documents/upload', formData, {
+            headers: { 'Content-Type': undefined },
             onUploadProgress: (progressEvent) => {
               if (progressEvent.total) {
                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -162,6 +163,23 @@ export default function ClientPortal() {
     } catch (err) {
       console.error('Failed to delete document', err);
       alert('Failed to delete document');
+    }
+  };
+
+  const handleDownloadDocument = async (id: string, fileName: string) => {
+    try {
+      const res = await api.get(`/documents/${id}/download`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed', err);
+      alert('Failed to download document');
     }
   };
 
@@ -359,13 +377,22 @@ export default function ClientPortal() {
                           <span className="text-xs font-medium">{doc.status}</span>
                           <StatusIcon status={doc.status} />
                         </div>
-                        <button 
-                          onClick={() => handleDeleteDocument(doc._id)}
-                          className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-full transition-colors"
-                          title="Delete document"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button 
+                            onClick={() => handleDownloadDocument(doc._id, doc.originalName)}
+                            className="p-1.5 text-neutral-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 rounded-full transition-colors"
+                            title="Download document"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteDocument(doc._id)}
+                            className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-full transition-colors"
+                            title="Delete document"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <div className="flex-1">
