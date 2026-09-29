@@ -57,11 +57,15 @@ export default function ClientPortal() {
   useEffect(() => {
     if (!socket || !clientInfo?._id) return;
 
+    let timeoutId: NodeJS.Timeout;
+
     const handleDocumentUpdate = () => {
-      // Re-fetch documents whenever a document is updated
-      api.get(`/documents/client/${clientInfo._id}`).then(res => {
-        setDocuments(res.data.data.documents);
-      });
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        api.get(`/documents/client/${clientInfo._id}`).then(res => {
+          setDocuments(res.data.data.documents);
+        }).catch(err => console.error('Failed to update documents', err));
+      }, 500);
     };
 
     socket.on('document.processing', handleDocumentUpdate);
@@ -69,6 +73,7 @@ export default function ClientPortal() {
     socket.on('document.failed', handleDocumentUpdate);
 
     return () => {
+      clearTimeout(timeoutId);
       socket.off('document.processing', handleDocumentUpdate);
       socket.off('document.verified', handleDocumentUpdate);
       socket.off('document.failed', handleDocumentUpdate);
@@ -78,6 +83,12 @@ export default function ClientPortal() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
+
+    if (selectedFiles.length + files.length > 10) {
+      alert('You can only select up to 10 files at a time.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
 
     const newFiles = files.map(file => ({
       id: Math.random().toString(36).substring(7),

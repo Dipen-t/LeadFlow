@@ -46,8 +46,13 @@ export default function Dashboard() {
   useEffect(() => {
     if (!socket) return;
 
+    let timeoutId: NodeJS.Timeout;
+
     const handleDataUpdate = () => {
-      fetchMetricsAndStages();
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchMetricsAndStages();
+      }, 500);
     };
 
     socket.on('lead.created', handleDataUpdate);
@@ -60,6 +65,7 @@ export default function Dashboard() {
     socket.on('connect', handleDataUpdate);
 
     return () => {
+      clearTimeout(timeoutId);
       socket.off('lead.created', handleDataUpdate);
       socket.off('lead.stageChanged', handleDataUpdate);
       socket.off('lead.converted', handleDataUpdate);
