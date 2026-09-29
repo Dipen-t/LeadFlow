@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/axios';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Users, FileText, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Users, FileText, AlertTriangle, AlertCircle } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { useSocket } from '../hooks/useSocket';
 import { 
@@ -166,7 +166,7 @@ export default function Dashboard() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {categoryData.map((entry, index) => (
+                    {categoryData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

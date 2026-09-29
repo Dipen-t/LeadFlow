@@ -46,10 +46,10 @@ export function DocumentsList({ documents, onDelete, onDownload }: DocumentsList
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" title="View Document" asChild>
-                  <a href={doc.storageKey} target="_blank" rel="noopener noreferrer">
-                    <Eye className="h-4 w-4" />
-                  </a>
+                <Button variant="ghost" size="icon" title="View Document" render={
+                  <a href={doc.storageKey} target="_blank" rel="noopener noreferrer" />
+                }>
+                  <Eye className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" title="Download Document" onClick={() => onDownload(doc._id, doc.originalName)}>
                   <Download className="h-4 w-4" />

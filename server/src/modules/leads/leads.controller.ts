@@ -101,7 +101,7 @@ export const moveLeadStage = async (req: Request, res: Response, next: NextFunct
     // Trigger automations if the stage actually changed
     if (previousStageId !== pipelineStageId) {
       // 15.3 & 16.2 Pipeline Trigger: We explicitly do NOT await this. 
-      triggerStageAutomations(brokerageId as string, lead.pipelineStageId as any, lead._id as any);
+      triggerStageAutomations(brokerageId as any, lead.pipelineStageId as any, lead._id as any);
     }
 
     broadcastToBrokerage(brokerageId as string, 'lead.stageChanged', { lead });
@@ -145,7 +145,7 @@ export const assignLead = async (req: Request, res: Response, next: NextFunction
 
     // If assigned for the first time, trigger automations for the current stage
     if (!previousAdvisorId && advisorId) {
-      triggerStageAutomations(brokerageId as string, lead.pipelineStageId as any, lead._id as any);
+      triggerStageAutomations(brokerageId as any, lead.pipelineStageId as any, lead._id as any);
     }
 
     broadcastToBrokerage(brokerageId as string, 'lead.assigned', { lead });

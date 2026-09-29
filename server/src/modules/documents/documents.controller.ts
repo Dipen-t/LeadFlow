@@ -37,7 +37,7 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
 
     // 2. Create Document persistent record tracking Cloudinary URL
     const doc = await Document.create({
-      brokerageId,
+      brokerageId: brokerageId as string,
       clientId,
       uploadedBy: req.user?.userId,
       originalName: file.originalname,
@@ -50,7 +50,7 @@ export const uploadDocument = async (req: Request, res: Response, next: NextFunc
     // 3. Enqueue verification into background worker queue
     await documentQueue.add('verify-document', {
       documentId: doc._id,
-      brokerageId: brokerageId.toString(),
+      brokerageId: brokerageId as string,
     }, {
       attempts: 3, // Retry behavior spec 14.3
       backoff: { type: 'exponential', delay: 1000 },

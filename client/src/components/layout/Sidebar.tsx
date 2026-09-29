@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, Settings as SettingsIcon, ShieldAlert, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, ShieldAlert, Zap } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/button';
 

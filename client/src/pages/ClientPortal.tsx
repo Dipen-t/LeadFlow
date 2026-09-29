@@ -5,7 +5,7 @@ import { Loader } from '@/components/ui/loader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, Clock, Trash2, Key, Loader2 } from 'lucide-react';
@@ -185,12 +185,12 @@ export default function ClientPortal() {
           </div>
           <div className="flex items-center gap-4">
             <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-              <DialogTrigger asChild>
+              <DialogTrigger render={
                 <Button variant="outline" className="gap-2">
                   <Key className="h-4 w-4" />
                   Change Password
                 </Button>
-              </DialogTrigger>
+              } />
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Change Password</DialogTitle>

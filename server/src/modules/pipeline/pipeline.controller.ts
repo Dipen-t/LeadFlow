@@ -36,7 +36,7 @@ export const createStage = async (req: Request, res: Response, next: NextFunctio
 
     const stage = await PipelineStage.create({
       ...data,
-      brokerageId,
+      brokerageId: brokerageId as string,
     });
 
     res.status(201).json({

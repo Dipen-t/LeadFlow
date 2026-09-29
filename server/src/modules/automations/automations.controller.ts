@@ -38,7 +38,7 @@ export const createTaskTemplate = async (req: Request, res: Response, next: Next
     const data = taskTemplateSchema.parse(req.body);
 
     const template = await TaskTemplate.create({
-      brokerageId,
+      brokerageId: brokerageId as string,
       ...data
     });
 
