@@ -46,7 +46,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!socket) return;
 
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const handleDataUpdate = () => {
       clearTimeout(timeoutId);

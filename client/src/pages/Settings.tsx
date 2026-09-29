@@ -38,6 +38,7 @@ export default function Settings() {
   const [taskTemplates, setTaskTemplates] = useState<TaskTemplate[]>([]);
   
   const [isSavingEmail, setIsSavingEmail] = useState(false);
+  const [isEmailSaved, setIsEmailSaved] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskHours, setNewTaskHours] = useState('24');
   const [isAddingTask, setIsAddingTask] = useState(false);
@@ -81,13 +82,16 @@ export default function Settings() {
   const handleSaveEmailTemplate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingEmail(true);
+    setIsEmailSaved(false);
     try {
       await api.post('/automations/email-template', {
         pipelineStageId: selectedStageId,
         subject: emailTemplate.subject,
         body: emailTemplate.body
       });
-      alert('Email template saved successfully');
+      setIsEmailSaved(true);
+      await fetchAutomations(selectedStageId); // Refresh to get the _id
+      setTimeout(() => setIsEmailSaved(false), 3000);
     } catch (err) {
       console.error('Failed to save email template', err);
       alert('Failed to save email template');
@@ -173,6 +177,11 @@ export default function Settings() {
               <div className="flex items-center gap-2">
                 <Mail className="h-5 w-5 text-blue-500" />
                 <h3 className="text-lg font-semibold">Email Template</h3>
+                {emailTemplate._id && (
+                  <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 border border-green-200">
+                    <CheckSquare className="w-3 h-3" /> Configured
+                  </span>
+                )}
               </div>
               <p className="text-sm text-muted-foreground">
                 Sent to the lead immediately upon entering this stage. <br/>
@@ -198,9 +207,16 @@ export default function Settings() {
                     />
                   </Field>
                 </FieldGroup>
-                <Button type="submit" disabled={isSavingEmail}>
-                  {isSavingEmail ? 'Saving...' : 'Save Email Template'}
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button type="submit" disabled={isSavingEmail}>
+                    {isSavingEmail ? 'Saving...' : (emailTemplate._id ? 'Update Email Template' : 'Save Email Template')}
+                  </Button>
+                  {isEmailSaved && (
+                    <span className="text-sm text-green-600 flex items-center gap-1 font-medium">
+                      <CheckSquare className="w-4 h-4" /> Saved successfully
+                    </span>
+                  )}
+                </div>
               </form>
             </div>
 

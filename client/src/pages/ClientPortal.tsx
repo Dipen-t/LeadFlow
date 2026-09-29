@@ -57,7 +57,7 @@ export default function ClientPortal() {
   useEffect(() => {
     if (!socket || !clientInfo?._id) return;
 
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const handleDocumentUpdate = () => {
       clearTimeout(timeoutId);
@@ -110,24 +110,29 @@ export default function ClientPortal() {
     setIsUploading(true);
 
     try {
-      const results = await Promise.allSettled(selectedFiles.map(async (selectedFile) => {
-        const formData = new FormData();
-        formData.append('document', selectedFile.file);
-        formData.append('clientId', clientInfo._id);
-        
-        await api.post('/documents/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          onUploadProgress: (progressEvent) => {
-            if (progressEvent.total) {
-              const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-              setSelectedFiles(prev => prev.map(f => 
-                f.id === selectedFile.id ? { ...f, progress: percentCompleted } : f
-              ));
+      const results: PromiseSettledResult<string>[] = [];
+      for (const selectedFile of selectedFiles) {
+        try {
+          const formData = new FormData();
+          formData.append('document', selectedFile.file);
+          formData.append('clientId', clientInfo._id);
+          
+          await api.post('/documents/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setSelectedFiles(prev => prev.map(f => 
+                  f.id === selectedFile.id ? { ...f, progress: percentCompleted } : f
+                ));
+              }
             }
-          }
-        });
-        return selectedFile.id;
-      }));
+          });
+          results.push({ status: 'fulfilled', value: selectedFile.id });
+        } catch (error) {
+          results.push({ status: 'rejected', reason: error });
+        }
+      }
 
       const successfulIds = results
         .filter(r => r.status === 'fulfilled')
