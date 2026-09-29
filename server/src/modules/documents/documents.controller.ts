@@ -144,10 +144,22 @@ export const deleteDocument = async (req: Request, res: Response, next: NextFunc
       }
     }
 
-    const doc = await Document.findOneAndDelete(query);
+    const doc = await Document.findOne(query);
     if (!doc) {
       throw new NotFoundError('Document not found');
     }
+
+    if (req.user?.role === 'ADVISOR') {
+      const client = await Client.findOne({ _id: doc.clientId, brokerageId: req.user.brokerageId });
+      if (!client) throw new NotFoundError('Client not found');
+      
+      const lead = await Lead.findOne({ _id: client.leadId, assignedAdvisorId: req.user.userId });
+      if (!lead) {
+        throw new AppError('Not authorized to access documents for this client', 403);
+      }
+    }
+
+    await doc.deleteOne();
 
     res.json({
       status: 'success',
@@ -177,6 +189,16 @@ export const downloadDocument = async (req: Request, res: Response, next: NextFu
     const doc = await Document.findOne(query);
     if (!doc) {
       throw new NotFoundError('Document not found');
+    }
+
+    if (req.user?.role === 'ADVISOR') {
+      const client = await Client.findOne({ _id: doc.clientId, brokerageId: req.user.brokerageId });
+      if (!client) throw new NotFoundError('Client not found');
+      
+      const lead = await Lead.findOne({ _id: client.leadId, assignedAdvisorId: req.user.userId });
+      if (!lead) {
+        throw new AppError('Not authorized to access documents for this client', 403);
+      }
     }
 
     const response = await fetch(doc.storageKey);

@@ -93,8 +93,8 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
       if (data.role === 'PLATFORM_ADMIN') {
         throw new AppError('Cannot change role to platform admin', 403);
       }
-      if (data.brokerageId && data.brokerageId !== req.user.brokerageId) {
-        throw new AppError('Cannot move user to another brokerage', 403);
+      if (data.brokerageId !== undefined) {
+        delete data.brokerageId;
       }
     }
 
