@@ -5,7 +5,7 @@ import { getBrokerages, createBrokerage, deleteBrokerage } from './brokerages.co
 const router = Router();
 
 router.use(authenticate);
-router.use(requireRole(['PLATFORM_ADMIN', 'SYSTEM_ADMIN']));
+router.use(requireRole(['PLATFORM_ADMIN']));
 
 router.get('/', getBrokerages);
 router.post('/', createBrokerage);

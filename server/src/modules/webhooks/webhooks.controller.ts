@@ -43,7 +43,28 @@ export const ingestLead = async (req: Request, res: Response, next: NextFunction
        }
     }
 
-    // 4. Resolve default pipeline stage
+    // 4. Duplicate Person Recognition
+    let duplicateOfId: any = undefined;
+    let status: 'ACTIVE' | 'DUPLICATE' = 'ACTIVE';
+    
+    if (payload.email || payload.phone) {
+      const orConditions = [];
+      if (payload.email) orConditions.push({ email: payload.email });
+      if (payload.phone) orConditions.push({ phone: payload.phone });
+      
+      const knownPerson = await Lead.findOne({ 
+        brokerageId: integration.brokerageId, 
+        $or: orConditions 
+      });
+
+      if (knownPerson) {
+        logger.info({ event: 'lead.person_recognized', leadId: knownPerson._id }, 'Recognized an existing person based on email or phone');
+        duplicateOfId = knownPerson._id;
+        status = 'DUPLICATE';
+      }
+    }
+
+    // 5. Resolve default pipeline stage
     let stage = await PipelineStage.findOne({ brokerageId: integration.brokerageId, category: 'OPEN' }).sort({ order: 1 });
     
     if (!stage) {
@@ -51,15 +72,34 @@ export const ingestLead = async (req: Request, res: Response, next: NextFunction
       stage = await PipelineStage.create({ brokerageId: integration.brokerageId, name: 'NEW', order: 0, category: 'OPEN' });
     }
 
-    // 5. Save normalized lead
-    const lead = await Lead.create({
-      brokerageId: integration.brokerageId,
-      ...payload,
-      pipelineStageId: stage._id,
-      version: 0,
-    });
+    // 6. Save normalized lead
+    let lead;
+    try {
+      lead = await Lead.create({
+        brokerageId: integration.brokerageId,
+        ...payload,
+        pipelineStageId: stage._id,
+        status,
+        duplicateOf: duplicateOfId,
+        version: 0,
+      });
+    } catch (err: any) {
+      if (err.code === 11000 && payload.externalId) {
+        // Race condition handled: another request created it between step 3 and here
+        const raceLead = await Lead.findOne({ 
+          brokerageId: integration.brokerageId, 
+          source: payload.source, 
+          externalId: payload.externalId 
+        });
+        if (raceLead) {
+          logger.info({ event: 'lead.race_condition_handled', leadId: raceLead._id }, 'Race condition handled for idempotent webhook');
+          return res.status(200).json({ status: 'success', data: { lead: raceLead } });
+        }
+      }
+      throw err;
+    }
 
-    // 6. Broadcast Real-Time socket event to the tenant's advisors
+    // 7. Broadcast Real-Time socket event to the tenant's advisors
     broadcastToBrokerage(integration.brokerageId.toString(), 'lead.new', { lead });
 
     logger.info({ event: 'lead.created', leadId: lead._id }, 'Lead created via webhook');

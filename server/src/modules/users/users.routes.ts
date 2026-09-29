@@ -6,7 +6,7 @@ const router = Router();
 
 router.use(authenticate);
 // Restrict to platform admin and brokerage admin
-router.use(requireRole(['PLATFORM_ADMIN', 'SYSTEM_ADMIN', 'BROKERAGE_ADMIN']));
+router.use(requireRole(['PLATFORM_ADMIN', 'BROKERAGE_ADMIN']));
 
 router.get('/', getUsers);
 router.post('/', createUser);
