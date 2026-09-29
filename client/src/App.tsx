@@ -12,11 +12,21 @@ import Users from './pages/users';
 import AdminLayout from './components/layout/AdminLayout';
 import { useAuthStore } from './store/authStore';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    if (user.role === 'CLIENT') {
+      return <Navigate to="/client-portal" replace />;
+    }
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return children;
 }
 
@@ -27,7 +37,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         <Route path="/client-portal" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['CLIENT']}>
             <ClientPortal />
           </ProtectedRoute>
         } />
@@ -36,7 +46,7 @@ function App() {
         <Route 
           path="/" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['PLATFORM_ADMIN', 'BROKERAGE_ADMIN', 'ADVISOR']}>
               <AdminLayout />
             </ProtectedRoute>
           }

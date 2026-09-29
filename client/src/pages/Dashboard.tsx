@@ -1,40 +1,37 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/axios';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Users, FileText, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { useSocket } from '../hooks/useSocket';
+import { 
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
+} from 'recharts';
 
 interface DashboardMetrics {
   totalLeads: number;
   wonLeads: number;
   lostLeads: number;
-  leadsByStage: Record<string, number>;
+  leadsByCategory: Record<string, number>;
   pendingDocuments: number;
   failedDocuments: number;
   overdueTasks: number;
+  pendingTasks: number;
+  completedTasks: number;
 }
 
-interface Stage {
-  _id: string;
-  name: string;
-  order: number;
-}
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF66B2'];
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [stages, setStages] = useState<Stage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const socket = useSocket();
 
   const fetchMetricsAndStages = async () => {
     try {
-      const [metricsRes, stagesRes] = await Promise.all([
-        api.get('/dashboard/metrics'),
-        api.get('/pipeline/stages')
-      ]);
+      const metricsRes = await api.get('/dashboard/metrics');
       setMetrics(metricsRes.data.data);
-      setStages(stagesRes.data.data.stages);
     } catch (err) {
       console.error('Failed to fetch dashboard data', err);
     } finally {
@@ -50,20 +47,16 @@ export default function Dashboard() {
     if (!socket) return;
 
     const handleDataUpdate = () => {
-      // Re-fetch metrics whenever relevant events occur
       fetchMetricsAndStages();
     };
 
-    // Listen for pipeline events
     socket.on('lead.created', handleDataUpdate);
     socket.on('lead.stageChanged', handleDataUpdate);
     socket.on('lead.converted', handleDataUpdate);
-    
-    // Listen for document events
     socket.on('document.verified', handleDataUpdate);
     socket.on('document.failed', handleDataUpdate);
-    
-    // Re-fetch to ensure sync after reconnects
+    socket.on('task.created', handleDataUpdate);
+    socket.on('task.completed', handleDataUpdate);
     socket.on('connect', handleDataUpdate);
 
     return () => {
@@ -72,6 +65,8 @@ export default function Dashboard() {
       socket.off('lead.converted', handleDataUpdate);
       socket.off('document.verified', handleDataUpdate);
       socket.off('document.failed', handleDataUpdate);
+      socket.off('task.created', handleDataUpdate);
+      socket.off('task.completed', handleDataUpdate);
       socket.off('connect', handleDataUpdate);
     };
   }, [socket]);
@@ -83,6 +78,17 @@ export default function Dashboard() {
   if (!metrics) {
     return <div className="text-red-500">Failed to load dashboard metrics.</div>;
   }
+
+  // Prepare chart data
+  const categoryData = Object.entries(metrics.leadsByCategory || {})
+    .map(([status, count]) => ({ name: status, value: count }))
+    .filter(d => d.value > 0);
+
+  const taskData = [
+    { name: 'Pending', count: metrics.pendingTasks },
+    { name: 'Overdue', count: metrics.overdueTasks },
+    { name: 'Completed', count: metrics.completedTasks },
+  ];
 
   return (
     <div className="space-y-6">
@@ -140,28 +146,61 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Pipeline Stages Breakdown */}
-      <div className="mt-8">
-        <h2 className="text-lg font-semibold mb-4">Pipeline Distribution</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Object.entries(metrics.leadsByStage || {}).map(([stageId, count]) => {
-            const stageName = stages.find(s => s._id === stageId)?.name || 'Unknown Stage';
-            return (
-              <Card key={stageId}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{stageName}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{count as number}</div>
-                  <p className="text-xs text-muted-foreground mt-1">Active leads</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-          {Object.keys(metrics.leadsByStage || {}).length === 0 && (
-            <div className="text-sm text-muted-foreground italic col-span-full">No active leads in pipeline stages yet.</div>
-          )}
-        </div>
+      {/* Charts Row */}
+      <div className="grid gap-6 md:grid-cols-2 mt-8">
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Lead Categories</CardTitle>
+            <CardDescription>Bifurcation of leads by their status</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[300px] flex justify-center items-center">
+            {categoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend verticalAlign="bottom" height={36}/>
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-sm text-muted-foreground">No leads available yet.</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Task Distribution</CardTitle>
+            <CardDescription>Overview of pending, overdue, and completed tasks</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={taskData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip cursor={{fill: 'transparent'}} />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {taskData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.name === 'Completed' ? '#10b981' : entry.name === 'Overdue' ? '#ef4444' : '#3b82f6'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

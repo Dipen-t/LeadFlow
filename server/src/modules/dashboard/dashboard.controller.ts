@@ -23,34 +23,41 @@ export const getDashboardMetrics = async (req: Request, res: Response, next: Nex
     }
 
     // 17.1 Metrics Gathering
-    // Total Leads (Active)
-    const totalLeads = await Lead.countDocuments({ ...leadFilter, status: 'ACTIVE' });
-    
-    // Won (Converted) & Lost
-    const wonLeads = await Lead.countDocuments({ ...leadFilter, status: 'CONVERTED' });
-    const lostLeads = await Lead.countDocuments({ ...leadFilter, status: 'LOST' });
-
-    // Leads by pipeline stage
-    const leadsByStageRaw = await Lead.aggregate([
-      { $match: { ...leadFilter, status: 'ACTIVE' } },
-      { $group: { _id: '$pipelineStageId', count: { $sum: 1 } } }
+    const [totalLeads, wonLeads, lostLeads, duplicateLeads] = await Promise.all([
+      Lead.countDocuments({ ...leadFilter, status: 'ACTIVE' }),
+      Lead.countDocuments({ ...leadFilter, status: 'CONVERTED' }),
+      Lead.countDocuments({ ...leadFilter, status: 'LOST' }),
+      Lead.countDocuments({ ...leadFilter, status: 'DUPLICATE' }),
     ]);
-
-    const leadsByStage = leadsByStageRaw.reduce((acc, curr) => {
-      acc[curr._id.toString()] = curr.count;
-      return acc;
-    }, {});
+    
+    const leadsByCategory = {
+      ACTIVE: totalLeads,
+      CONVERTED: wonLeads,
+      LOST: lostLeads,
+      DUPLICATE: duplicateLeads
+    };
 
     // Pending and Failed Documents
     const pendingDocuments = await Document.countDocuments({ ...docFilter, status: 'PENDING' });
     const failedDocuments = await Document.countDocuments({ ...docFilter, status: 'FAILED' });
 
-    // Overdue Tasks (now > dueAt AND status != COMPLETED)
+    // Task Metrics
     const now = new Date();
     const overdueTasks = await Task.countDocuments({
       ...taskFilter,
       status: 'PENDING',
       dueAt: { $lt: now }
+    });
+    
+    const pendingTasks = await Task.countDocuments({
+      ...taskFilter,
+      status: 'PENDING',
+      dueAt: { $gte: now }
+    });
+    
+    const completedTasks = await Task.countDocuments({
+      ...taskFilter,
+      status: 'COMPLETED'
     });
 
     res.json({
@@ -59,10 +66,12 @@ export const getDashboardMetrics = async (req: Request, res: Response, next: Nex
         totalLeads,
         wonLeads,
         lostLeads,
-        leadsByStage,
+        leadsByCategory,
         pendingDocuments,
         failedDocuments,
-        overdueTasks
+        overdueTasks,
+        pendingTasks,
+        completedTasks
       },
     });
   } catch (err) {
