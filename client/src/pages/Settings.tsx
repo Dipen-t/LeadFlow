@@ -133,7 +133,7 @@ export default function Settings() {
   return (
     <div className="p-6 md:p-8 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Brokerage Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Automations</h1>
         <p className="text-muted-foreground mt-1">Configure pipeline stages and automated actions.</p>
       </div>
 

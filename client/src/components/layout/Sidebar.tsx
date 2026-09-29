@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, Settings as SettingsIcon, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, Settings as SettingsIcon, ShieldAlert, Zap } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/button';
 
@@ -16,7 +16,7 @@ export default function Sidebar() {
   ];
 
   if (user?.role !== 'ADVISOR' && user?.role !== 'CLIENT') {
-    navigation.push({ name: 'Settings', href: '/settings', icon: SettingsIcon });
+    navigation.push({ name: 'Automations', href: '/settings', icon: Zap });
   }
 
   if (user?.role === 'PLATFORM_ADMIN' || user?.role === 'SYSTEM_ADMIN' || user?.role === 'BROKERAGE_ADMIN') {

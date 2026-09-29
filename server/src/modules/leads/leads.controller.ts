@@ -140,8 +140,14 @@ export const assignLead = async (req: Request, res: Response, next: NextFunction
       }
     }
 
+    const previousAdvisorId = lead.assignedAdvisorId;
     lead.assignedAdvisorId = advisorId as any;
     await lead.save(); // Atomic update
+
+    // If assigned for the first time, trigger automations for the current stage
+    if (!previousAdvisorId && advisorId) {
+      triggerStageAutomations(brokerageId, lead.pipelineStageId, lead._id);
+    }
 
     broadcastToBrokerage(brokerageId, 'lead.assigned', { lead });
     logger.info({ event: 'lead.assigned', leadId: lead._id, advisorId }, 'Lead assigned to advisor');

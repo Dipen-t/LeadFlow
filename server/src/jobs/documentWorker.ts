@@ -21,12 +21,12 @@ export const documentWorker = new Worker('document-verification', async (job: Jo
   broadcastToBrokerage(brokerageId, 'document.processing', { documentId: doc._id });
   logger.info({ event: 'document.processing_started', documentId: doc._id }, 'Document verification started');
 
-  // 2. Simulate processing delay (2-4 seconds) as per assignment instructions
-  const delay = Math.floor(Math.random() * 2000) + 2000;
+  // 2. Simulate processing delay (8-12 seconds) as per assignment instructions
+  const delay = Math.floor(Math.random() * 4000) + 8000;
   await new Promise(resolve => setTimeout(resolve, delay));
 
-  // 3. Simulate occasional failures (e.g. 20% failure rate)
-  const isFailure = Math.random() < 0.2;
+  // 3. Simulate occasional failures (e.g. 40% failure rate)
+  const isFailure = Math.random() < 0.4;
 
   if (isFailure) {
      doc.status = 'FAILED';
@@ -36,7 +36,7 @@ export const documentWorker = new Worker('document-verification', async (job: Jo
      
      broadcastToBrokerage(brokerageId, 'document.failed', { documentId: doc._id, reason: doc.failureReason });
      logger.warn({ event: 'document.processing_failed', documentId: doc._id, reason: doc.failureReason }, 'Document verification failed');
-     throw new Error(doc.failureReason); // Will trigger BullMQ automatic retries if configured
+     return; // We return rather than throw so that it permanently fails and doesn't just eventually succeed via retries
   }
 
   // 4. Success state

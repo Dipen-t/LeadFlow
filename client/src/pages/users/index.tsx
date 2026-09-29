@@ -41,7 +41,9 @@ export default function Users() {
     try {
       const [fetchedUsers, fetchedBrokerages] = await Promise.all([
         fetchUsersAPI(),
-        fetchBrokeragesAPI()
+        (currentUserRole === 'PLATFORM_ADMIN' || currentUserRole === 'SYSTEM_ADMIN') 
+          ? fetchBrokeragesAPI() 
+          : Promise.resolve([])
       ]);
       setUsers(fetchedUsers);
       setBrokerages(fetchedBrokerages);

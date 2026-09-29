@@ -36,22 +36,30 @@ export const triggerStageAutomations = async (
       const taskTemplates = await TaskTemplate.find({ brokerageId, pipelineStageId });
       
       if (taskTemplates.length > 0) {
-        const tasksToCreate = taskTemplates.map(template => {
-          const dueAt = new Date();
-          dueAt.setHours(dueAt.getHours() + template.dueInHours); // 16.1 Due calculations
+        // Prevent duplicate tasks if lead goes back and forth
+        const existingTasks = await Task.find({ brokerageId, leadId, status: 'PENDING' });
+        const existingTitles = new Set(existingTasks.map(t => t.title));
 
-          return {
-            brokerageId,
-            leadId,
-            assignedAdvisorId: lead.assignedAdvisorId,
-            title: template.title,
-            dueAt,
-            status: 'PENDING',
-          };
-        });
+        const templatesToCreate = taskTemplates.filter(t => !existingTitles.has(t.title));
 
-        await Task.insertMany(tasksToCreate);
-        logger.info({ event: 'task.created', leadId, taskCount: tasksToCreate.length }, `${tasksToCreate.length} task automations assigned to Advisor ${lead.assignedAdvisorId} for Lead ${leadId}`);
+        if (templatesToCreate.length > 0) {
+          const tasksToCreate = templatesToCreate.map(template => {
+            const dueAt = new Date();
+            dueAt.setHours(dueAt.getHours() + template.dueInHours); // 16.1 Due calculations
+
+            return {
+              brokerageId,
+              leadId,
+              assignedAdvisorId: lead.assignedAdvisorId,
+              title: template.title,
+              dueAt,
+              status: 'PENDING',
+            };
+          });
+
+          await Task.insertMany(tasksToCreate);
+          logger.info({ event: 'task.created', leadId, taskCount: tasksToCreate.length }, `${tasksToCreate.length} task automations assigned to Advisor ${lead.assignedAdvisorId} for Lead ${leadId}`);
+        }
       }
     }
 

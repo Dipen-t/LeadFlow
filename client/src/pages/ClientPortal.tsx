@@ -8,7 +8,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Input } from '@/components/ui/input';
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/PasswordInput';
-import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, Clock, Trash2, Key } from 'lucide-react';
+import { UploadCloud, File as FileIcon, CheckCircle, AlertTriangle, Clock, Trash2, Key, Loader2 } from 'lucide-react';
 import { useSocket } from '../hooks/useSocket';
 
 interface Document {
@@ -166,7 +166,7 @@ export default function ClientPortal() {
     switch(status) {
       case 'VERIFIED': return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'FAILED': return <AlertTriangle className="h-5 w-5 text-red-500" />;
-      case 'PROCESSING': return <Loader className="h-5 w-5 !min-h-0 text-blue-500 mb-0" />;
+      case 'PROCESSING': return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
       default: return <Clock className="h-5 w-5 text-yellow-500" />;
     }
   };
