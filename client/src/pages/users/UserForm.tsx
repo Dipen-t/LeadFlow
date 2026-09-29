@@ -44,12 +44,12 @@ export function UserForm({ brokerages, isPlatformAdmin, onSubmit }: UserFormProp
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Add User
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>

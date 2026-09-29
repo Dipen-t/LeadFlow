@@ -151,7 +151,7 @@ export default function Settings() {
           
           <div>
             <label className="block text-sm font-medium mb-2">Select Pipeline Stage</label>
-            <Select value={selectedStageId} onValueChange={setSelectedStageId}>
+            <Select value={selectedStageId} onValueChange={(val) => { if (val) setSelectedStageId(val); }}>
               <SelectTrigger className="w-full md:w-[300px]">
                 <SelectValue placeholder="Select a stage...">
                   {stages.find(s => s._id === selectedStageId)?.name || 'Select a stage...'}

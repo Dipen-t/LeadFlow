@@ -58,7 +58,7 @@ export const convertLeadToClient = async (req: Request, res: Response, next: Nex
     let client;
     try {
       client = await Client.create({
-        brokerageId,
+        brokerageId: brokerageId as string,
         leadId: lead._id,
         userId: user._id,
         firstName: lead.firstName,
@@ -85,7 +85,7 @@ export const convertLeadToClient = async (req: Request, res: Response, next: Nex
     await lead.save();
 
     // 6. Broadcast Realtime Event
-    broadcastToBrokerage(brokerageId.toString(), 'lead.converted', { client, leadId: lead._id });
+    broadcastToBrokerage(brokerageId as string, 'lead.converted', { client, leadId: lead._id });
 
     // For MVP, we return the generated password to the frontend so the advisor can securely copy and send it to the client.
     res.status(201).json({

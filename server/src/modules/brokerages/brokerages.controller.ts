@@ -47,15 +47,6 @@ export const createBrokerage = async (req: Request, res: Response, next: NextFun
     const brokerage = await Brokerage.create({
       name,
       slug,
-      settings: {
-        branding: {
-          primaryColor: '#000000',
-        },
-        features: {
-          enableClientPortal: true,
-          enableAutomations: true
-        }
-      }
     });
 
     res.status(201).json({

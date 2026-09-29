@@ -30,12 +30,12 @@ export function BrokerageForm({ onSubmit }: BrokerageFormProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Add Brokerage
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Brokerage</DialogTitle>

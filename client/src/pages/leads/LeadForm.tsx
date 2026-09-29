@@ -38,12 +38,12 @@ export function LeadForm({ stages, onSubmit }: LeadFormProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           New Lead
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Lead</DialogTitle>
