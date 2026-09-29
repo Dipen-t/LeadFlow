@@ -10,7 +10,7 @@ import { useAuthStore } from '../store/authStore';
 import { api } from '../lib/axios';
 
 export default function Login() {
-  const [email, setEmail] = useState('admin@leadflow.com');
+  const [email, setEmail] = useState('platform@leadflow.com');
   const [password, setPassword] = useState('password123');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -49,6 +49,11 @@ export default function Login() {
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-3 rounded-md text-sm mb-6 border border-blue-100 dark:border-blue-900/50">
+            <strong>Assessor Demo Credentials:</strong><br/>
+            Email: platform@leadflow.com<br/>
+            Password: password123
+          </div>
           <form onSubmit={handleLogin} className="flex flex-col gap-6">
             <FieldGroup>
               <Field>

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Lead } from '../leads/lead.model';
 import { Document } from '../documents/document.model';
 import { Task } from '../tasks/task.model';
+import { Client } from '../clients/client.model';
 import mongoose from 'mongoose';
 
 export const getDashboardMetrics = async (req: Request, res: Response, next: NextFunction) => {
@@ -15,11 +16,14 @@ export const getDashboardMetrics = async (req: Request, res: Response, next: Nex
     const docFilter: any = { brokerageId };
     const taskFilter: any = { brokerageId };
 
-    // If it's an Advisor, optionally restrict metrics to their assigned entities
+    // If it's an Advisor, restrict metrics to their assigned entities
     if (role === 'ADVISOR') {
       leadFilter.assignedAdvisorId = userId;
-      // In a real app, docs might be filtered by clients assigned to this advisor
       taskFilter.assignedAdvisorId = userId;
+
+      const assignedLeads = await Lead.find({ assignedAdvisorId: userId }).select('_id');
+      const assignedClients = await Client.find({ leadId: { $in: assignedLeads.map(l => l._id) } }).select('_id');
+      docFilter.clientId = { $in: assignedClients.map(c => c._id) };
     }
 
     // 17.1 Metrics Gathering
