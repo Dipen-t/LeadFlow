@@ -54,7 +54,7 @@ export default function Login() {
             Email: platform@leadflow.com<br/>
             Password: password123
           </div>
-          <form onSubmit={handleLogin} className="flex flex-col gap-6">
+          <form onSubmit={(e) => { e.preventDefault(); handleLogin(e); }} className="flex flex-col gap-6">
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>

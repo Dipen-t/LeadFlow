@@ -118,7 +118,6 @@ export default function ClientPortal() {
           formData.append('clientId', clientInfo._id);
           
           await api.post('/documents/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
             onUploadProgress: (progressEvent) => {
               if (progressEvent.total) {
                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
