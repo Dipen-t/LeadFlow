@@ -4,6 +4,18 @@ A full-stack CRM platform purpose-built for mortgage brokerages, featuring multi
 
 ---
 
+## What Was Built
+
+LeadFlow is a multi-tenant CRM for mortgage brokerages that manages the complete lead-to-client workflow. Brokerage admins can manage their team, receive leads through the external webhook, identify potential duplicate leads, assign leads to advisors, and manage them through a configurable pipeline. Advisors can work assigned leads, move them through pipeline stages, convert leads into clients, manage client cases, documents, and tasks, while real-time updates keep open screens synchronized. Clients have their own portal where they can log in, view their mortgage case, upload multiple documents, track upload progress, and see document verification status update in real time. Brokerage admins can also configure pipeline stages, email templates, stage-based automations, and task triggers, while dashboards provide an overview of leads, documents, and tasks.
+
+---
+
+## What's Incomplete / What Would Be Improved Next
+
+The core CRM workflow is implemented, but a few areas are intentionally simplified for the assignment. Document verification currently uses a simulated background process with an intentional delay and failure rate instead of a real document/OCR verification provider. Email automation is implemented through the background-job flow, but external email delivery is not connected to a production email provider. Test coverage could be expanded across the lead, document, task, and automation modules, and the frontend could use more comprehensive loading and error states. The authentication flow could also be extended with refresh tokens, and the external webhook could be strengthened with signed requests and replay protection for a production deployment.
+
+---
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
