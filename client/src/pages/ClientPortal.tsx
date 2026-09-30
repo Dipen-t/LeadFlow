@@ -317,7 +317,12 @@ export default function ClientPortal() {
 
             {selectedFiles.length > 0 && (
               <div className="mt-6 space-y-4">
-                <h4 className="font-medium text-sm">Selected Files ({selectedFiles.length})</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm">Selected Files ({selectedFiles.length})</h4>
+                  <Button onClick={uploadSelectedFiles} disabled={isUploading} size="sm" className="shrink-0">
+                    {isUploading ? 'Uploading...' : 'Upload All Files'}
+                  </Button>
+                </div>
                 <div className="space-y-3">
                   {selectedFiles.map(sf => (
                     <div key={sf.id} className="bg-neutral-50 dark:bg-neutral-900 border rounded p-3">
@@ -343,9 +348,7 @@ export default function ClientPortal() {
                     </div>
                   ))}
                 </div>
-                <Button onClick={uploadSelectedFiles} disabled={isUploading} className="w-full mt-4">
-                  {isUploading ? 'Uploading...' : 'Upload All Files'}
-                </Button>
+
               </div>
             )}
           </CardContent>
