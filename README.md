@@ -6,7 +6,7 @@ A full-stack CRM platform purpose-built for mortgage brokerages, featuring multi
 
 ## What Was Built
 
-LeadFlow is a multi-tenant CRM for mortgage brokerages that manages the complete lead-to-client workflow. Brokerage admins can manage their team, receive leads through the external webhook, identify potential duplicate leads, assign leads to advisors, and manage them through a configurable pipeline. Advisors can work assigned leads, move them through pipeline stages, convert leads into clients, manage client cases, documents, and tasks, while real-time updates keep open screens synchronized. Clients have their own portal where they can log in, view their mortgage case, upload multiple documents, track upload progress, and see document verification status update in real time. Brokerage admins can also configure pipeline stages, email templates, stage-based automations, and task triggers, while dashboards provide an overview of leads, documents, and tasks.
+LeadFlow is a multi-tenant CRM for mortgage brokerages that manages the complete lead-to-client workflow. Brokerage admins can manage their team, generate secure webhooks via the Integrations dashboard to receive leads externally, identify potential duplicate leads, assign leads to advisors, and manage them through a configurable pipeline. Advisors can work assigned leads, move them through pipeline stages, convert leads into clients, manage client cases, documents, and tasks, while real-time updates keep open screens synchronized. Clients have their own portal where they can log in, view their mortgage case, upload multiple documents, track upload progress, and see document verification status update in real time. Brokerage admins can also configure pipeline stages, email templates, stage-based automations, and task triggers, while dashboards provide an overview of leads, documents, and tasks.
 
 ---
 
@@ -248,7 +248,8 @@ The system enforces strict RBAC at both the API and UI layers:
 - Advisor assignment with scoped visibility
 
 ### 2. External Webhook Lead Ingestion
-- `POST /api/webhooks/lead` accepts external leads (e.g., from forms, landing pages)
+- **Integrations Dashboard**: Brokerage admins can easily generate, view, and revoke secure webhook URLs directly from the UI.
+- `POST /api/webhooks/leads/:secretKey` accepts external leads (e.g., from forms, landing pages, Zapier).
 - Validates required fields, creates lead, and broadcasts via Socket.IO
 - Idempotent — duplicate source references are rejected
 
@@ -291,7 +292,10 @@ All endpoints require `Authorization: Bearer <JWT>` unless noted.
 | `GET`    | `/api/leads`                         | Admin, Advisor                 | List leads (scoped)               |
 | `POST`   | `/api/leads`                         | Admin                          | Create a new lead                 |
 | `PATCH`  | `/api/leads/:id`                     | Admin, Advisor                 | Update lead (stage, advisor, etc) |
-| `POST`   | `/api/webhooks/lead`                 | Public (API Key)               | Ingest lead from external source  |
+| `POST`   | `/api/webhooks/leads/:secretKey`     | Public (API Key)               | Ingest lead from external source  |
+| `GET`    | `/api/integrations`                  | Admin                          | List active webhook integrations  |
+| `POST`   | `/api/integrations`                  | Admin                          | Generate new webhook integration  |
+| `PATCH`  | `/api/integrations/:id/revoke`       | Admin                          | Revoke a webhook integration      |
 | `GET`    | `/api/clients`                       | Admin, Advisor                 | List clients                      |
 | `POST`   | `/api/clients`                       | Admin, Advisor                 | Convert lead to client            |
 | `POST`   | `/api/documents/upload`              | Client                         | Upload document (multipart)       |
@@ -376,6 +380,7 @@ Development followed a feature-branch workflow with PRs merged into `main`:
 | `feat/minor-inconsistencies-fix`| Security fixes, auth improvements, bulk upload fixes        |
 | `final-inconsistencies`         | Final polish: dashboard charts, socket debouncing, UX fixes |
 | `fixed-build-error`             | TypeScript build error resolutions                          |
+| `feat/webhook-integrations`     | Webhook Integrations management UI, API, and Role guards    |
 
 ---
 
