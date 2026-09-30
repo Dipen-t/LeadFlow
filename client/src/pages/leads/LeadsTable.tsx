@@ -5,14 +5,11 @@ import type { Lead, PipelineStage } from './types';
 interface LeadsTableProps {
   leads: Lead[];
   stages: PipelineStage[];
-  advisors: any[];
-  userRole?: string;
   onMoveLead: (lead: Lead, stageId: string) => void;
-  onAssignLead: (lead: Lead, advisorId: string) => void;
   onConvertLead: (lead: Lead) => void;
 }
 
-export function LeadsTable({ leads, stages, advisors, userRole, onMoveLead, onAssignLead, onConvertLead }: LeadsTableProps) {
+export function LeadsTable({ leads, stages, onMoveLead, onConvertLead }: LeadsTableProps) {
   return (
     <div className="flex-1 overflow-auto rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
       <Table>

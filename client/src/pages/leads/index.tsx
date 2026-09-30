@@ -9,7 +9,7 @@ import { useSocket } from '../../hooks/useSocket';
 import { useAuthStore } from '../../store/authStore';
 import type { Lead, PipelineStage } from './types';
 import { 
-  fetchPipelineStagesAPI, fetchLeadsAPI, fetchAdvisorsAPI, 
+  fetchPipelineStagesAPI, fetchLeadsAPI, 
   createLeadAPI, moveLeadAPI, convertLeadAPI 
 } from './api';
 import { LeadsTable } from './LeadsTable';
@@ -20,7 +20,7 @@ export default function Leads() {
   const user = useAuthStore(state => state.user);
   const [stages, setStages] = useState<PipelineStage[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [advisors, setAdvisors] = useState<any[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'board' | 'table'>('board');
   const [conversionResult, setConversionResult] = useState<{ name: string, password?: string } | null>(null);
@@ -43,10 +43,7 @@ export default function Leads() {
       setStages(fetchedStages);
       setLeads(fetchedLeads);
       
-      if (user?.role === 'BROKERAGE_ADMIN') {
-        const fetchedAdvisors = await fetchAdvisorsAPI();
-        setAdvisors(fetchedAdvisors);
-      }
+
     } catch (err) {
       console.error('Failed to fetch data', err);
     } finally {
@@ -187,8 +184,6 @@ export default function Leads() {
         <LeadsBoard 
           leads={leads} 
           stages={stages} 
-          advisors={advisors} 
-          userRole={user?.role} 
           onMoveLead={handleMoveLead}
           onConvertLead={handleConvertLead}
           onDragEnd={onDragEnd}
@@ -197,8 +192,6 @@ export default function Leads() {
         <LeadsTable 
           leads={leads} 
           stages={stages} 
-          advisors={advisors} 
-          userRole={user?.role} 
           onMoveLead={handleMoveLead}
           onConvertLead={handleConvertLead}
         />

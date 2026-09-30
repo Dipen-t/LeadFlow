@@ -7,15 +7,12 @@ import type { Lead, PipelineStage } from './types';
 interface LeadsBoardProps {
   leads: Lead[];
   stages: PipelineStage[];
-  advisors: any[];
-  userRole?: string;
   onMoveLead: (lead: Lead, stageId: string) => void;
-  onAssignLead: (lead: Lead, advisorId: string) => void;
   onConvertLead: (lead: Lead) => void;
   onDragEnd: (result: DropResult) => void;
 }
 
-export function LeadsBoard({ leads, stages, advisors, userRole, onMoveLead, onAssignLead, onConvertLead, onDragEnd }: LeadsBoardProps) {
+export function LeadsBoard({ leads, stages, onMoveLead, onConvertLead, onDragEnd }: LeadsBoardProps) {
   return (
     <div className="flex-1 overflow-x-auto pb-4">
       <DragDropContext onDragEnd={onDragEnd}>
