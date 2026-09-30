@@ -68,10 +68,7 @@ export default function Login() {
                 />
               </Field>
               <Field>
-                <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
-                </div>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
                 <PasswordInput 
                   id="password" 
                   value={password}
@@ -86,11 +83,7 @@ export default function Login() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center border-t border-neutral-100 dark:border-neutral-800 p-4 mt-4">
-          <p className="text-sm text-muted-foreground">
-            Don't have an account? <a href="#" className="text-primary hover:underline font-medium">Contact Admin</a>
-          </p>
-        </CardFooter>
+
       </Card>
     </div>
   );
