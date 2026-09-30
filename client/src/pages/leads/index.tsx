@@ -8,6 +8,7 @@ import { type DropResult } from '@hello-pangea/dnd';
 import { useSocket } from '../../hooks/useSocket';
 import { useAuthStore } from '../../store/authStore';
 import type { Lead, PipelineStage } from './types';
+import { 
   fetchPipelineStagesAPI, fetchLeadsAPI, fetchAdvisorsAPI, 
   createLeadAPI, moveLeadAPI, convertLeadAPI 
 } from './api';
