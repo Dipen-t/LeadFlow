@@ -186,7 +186,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 **Client** (`client/.env`):
 
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_API_BASE_URL=http://localhost:5000/api
 ```
 
 ### Installation
@@ -325,7 +325,12 @@ Socket.IO events are scoped to `brokerageId` rooms:
 | `document.verified`  | Server → Client| `{ documentId }`       | Document passed verification       |
 | `document.failed`    | Server → Client| `{ documentId, reason}`| Document failed verification       |
 | `lead.created`       | Server → Client| `{ lead }`             | New lead ingested via webhook      |
-| `data.update`        | Server → Client| `{}`                   | Generic refresh trigger            |
+| `lead.stageChanged`  | Server → Client| `{ lead }`             | Lead moved to a new stage          |
+| `lead.converted`     | Server → Client| `{ lead }`             | Lead converted to a client         |
+| `task.created`       | Server → Client| `{ task }`             | New task created                   |
+| `task.completed`     | Server → Client| `{ task }`             | Task marked as completed           |
+
+> **Note:** The client implements a **singleton global socket connection** (using only the `websocket` transport) to prevent connection drops and polling issues when navigating across pages or deploying on load-balanced platforms like Render.
 
 ---
 
