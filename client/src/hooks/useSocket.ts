@@ -1,48 +1,53 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '../store/authStore';
 
+// Maintain a single global socket instance for the entire application
+let globalSocket: Socket | null = null;
+
 export function useSocket() {
-  const socketRef = useRef<Socket | null>(null);
   const token = useAuthStore(state => state.token);
+  const [socket, setSocket] = useState<Socket | null>(globalSocket);
 
   useEffect(() => {
-    if (!token) return;
-
-    // Connect to the Socket.IO server running on the same domain or an API URL
-    // Use regex to properly strip /api or /api/ from the end of the URL
-    // We check VITE_API_BASE_URL to match axios config, and fallback to VITE_API_URL.
-    let socketURL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
-    
-    // If no URL is provided and we are in development mode, default to localhost:5000
-    if (!socketURL && import.meta.env.DEV) {
-      socketURL = 'http://localhost:5000';
-    }
-    // If socketURL is still empty (in production), socket.io will default to window.location (the current domain).
-
-    
-    socketRef.current = io(socketURL, {
-      auth: { token },
-      withCredentials: true,
-      // Force websocket transport to avoid sticky session requirements / polling issues on Render
-      transports: ['websocket']
-    });
-
-    socketRef.current.on('connect', () => {
-      console.log('Socket connected');
-    });
-
-    socketRef.current.on('connect_error', (err) => {
-      console.error('Socket connection error:', err);
-    });
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
+    // If we lose the token (e.g., user logs out), clean up the global socket
+    if (!token) {
+      if (globalSocket) {
+        globalSocket.disconnect();
+        globalSocket = null;
+        setSocket(null);
       }
-    };
+      return;
+    }
+
+    // If a token exists but no socket, create the singleton socket
+    if (!globalSocket) {
+      let socketURL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
+      
+      if (!socketURL && import.meta.env.DEV) {
+        socketURL = 'http://localhost:5000';
+      }
+      
+      globalSocket = io(socketURL, {
+        auth: { token },
+        withCredentials: true,
+        transports: ['websocket']
+      });
+
+      globalSocket.on('connect', () => {
+        console.log('Socket connected globally');
+      });
+
+      globalSocket.on('connect_error', (err) => {
+        console.error('Socket connection error:', err);
+      });
+    }
+
+    setSocket(globalSocket);
+
+    // We no longer disconnect when the component unmounts! 
+    // This allows the socket to stay alive when navigating between pages/tabs.
   }, [token]);
 
-  return socketRef.current;
+  return socket;
 }
