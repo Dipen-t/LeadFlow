@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Lead } from '../leads/lead.model';
 import { Document } from '../documents/document.model';
 import { Task } from '../tasks/task.model';
-import { Client } from '../clients/client.model';
+import { PipelineStage } from '../pipeline/pipelineStage.model';
 import mongoose from 'mongoose';
 
 export const getDashboardMetrics = async (req: Request, res: Response, next: NextFunction) => {
@@ -32,6 +32,21 @@ export const getDashboardMetrics = async (req: Request, res: Response, next: Nex
       LOST: lostLeads,
       DUPLICATE: duplicateLeads
     };
+
+    // Pipeline Stages Aggregation
+    const stages = await PipelineStage.find({ brokerageId }).sort({ order: 1 });
+    const activeLeadsByStage = await Lead.aggregate([
+      { $match: { brokerageId: new mongoose.Types.ObjectId(brokerageId as string), status: 'ACTIVE' } },
+      { $group: { _id: '$pipelineStageId', count: { $sum: 1 } } }
+    ]);
+
+    const leadsByStage = stages.map(stage => {
+      const match = activeLeadsByStage.find(item => item._id?.toString() === stage._id.toString());
+      return {
+        name: stage.name,
+        count: match ? match.count : 0
+      };
+    });
 
     // Pending and Failed Documents
     const pendingDocuments = await Document.countDocuments({ ...docFilter, status: 'PENDING' });
@@ -63,6 +78,7 @@ export const getDashboardMetrics = async (req: Request, res: Response, next: Nex
         wonLeads,
         lostLeads,
         leadsByCategory,
+        leadsByStage,
         pendingDocuments,
         failedDocuments,
         overdueTasks,

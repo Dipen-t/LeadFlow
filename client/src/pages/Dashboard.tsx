@@ -14,6 +14,7 @@ interface DashboardMetrics {
   wonLeads: number;
   lostLeads: number;
   leadsByCategory: Record<string, number>;
+  leadsByStage: { name: string; count: number }[];
   pendingDocuments: number;
   failedDocuments: number;
   overdueTasks: number;
@@ -201,6 +202,31 @@ export default function Dashboard() {
                 <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                   {taskData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.name === 'Completed' ? '#10b981' : entry.name === 'Overdue' ? '#ef4444' : '#3b82f6'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Pipeline Chart Row */}
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Pipeline Overview</CardTitle>
+            <CardDescription>Real-time view of active leads across all pipeline stages</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={metrics.leadsByStage || []} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip cursor={{fill: 'transparent'}} />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {(metrics.leadsByStage || []).map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
               </BarChart>
