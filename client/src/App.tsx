@@ -8,6 +8,7 @@ import Documents from './pages/documents';
 import ClientPortal from './pages/ClientPortal';
 import Tasks from './pages/tasks';
 import Settings from './pages/Settings';
+import Integrations from './pages/integrations';
 import Users from './pages/users';
 import AdminLayout from './components/layout/AdminLayout';
 import { useAuthStore } from './store/authStore';
@@ -24,10 +25,21 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode,
     if (user.role === 'CLIENT') {
       return <Navigate to="/client-portal" replace />;
     }
+    if (user.role === 'PLATFORM_ADMIN') {
+      return <Navigate to="/users" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
   return children;
+}
+
+function IndexRedirect() {
+  const user = useAuthStore((state) => state.user);
+  if (user?.role === 'PLATFORM_ADMIN') {
+    return <Navigate to="/users" replace />;
+  }
+  return <Navigate to="/dashboard" replace />;
 }
 
 function App() {
@@ -51,14 +63,23 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route index element={<IndexRedirect />} />
+          <Route path="dashboard" element={
+            <ProtectedRoute allowedRoles={['BROKERAGE_ADMIN', 'ADVISOR']}>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
           <Route path="leads" element={<Leads />} />
           <Route path="clients" element={<Clients />} />
           <Route path="documents" element={<Documents />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="users" element={<Users />} />
+          <Route path="integrations" element={<Integrations />} />
+          <Route path="users" element={
+            <ProtectedRoute allowedRoles={['PLATFORM_ADMIN', 'BROKERAGE_ADMIN']}>
+              <Users />
+            </ProtectedRoute>
+          } />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

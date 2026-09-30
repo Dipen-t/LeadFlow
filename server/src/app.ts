@@ -17,6 +17,7 @@ import tasksRouter from './modules/tasks/tasks.routes';
 import dashboardRouter from './modules/dashboard/dashboard.routes';
 import usersRouter from './modules/users/users.routes';
 import brokeragesRouter from './modules/brokerages/brokerages.routes';
+import integrationsRouter from './modules/integrations/integrations.routes';
 
 // Initialize BullMQ Workers (Skip during tests to prevent Redis ECONNREFUSED)
 if (process.env.NODE_ENV !== 'test') {
@@ -75,6 +76,7 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/brokerages', brokeragesRouter);
+app.use('/api/integrations', integrationsRouter);
 
 // Error Handling
 app.use(errorHandler);
