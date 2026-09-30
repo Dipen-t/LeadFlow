@@ -29,12 +29,17 @@ const app = express();
 
 // Security Middlewares
 app.use(helmet());
-app.use(
-  cors({
-    origin: env.CLIENT_URL,
-    credentials: true,
-  })
-);
+const corsOptionsDelegate = (req: express.Request, callback: (err: Error | null, options?: cors.CorsOptions) => void) => {
+  if (req.originalUrl.startsWith('/api/webhooks')) {
+    // Allow any origin for webhooks (public API)
+    callback(null, { origin: true });
+  } else {
+    // Restrict everything else to the frontend client URL
+    callback(null, { origin: env.CLIENT_URL, credentials: true });
+  }
+};
+
+app.use(cors(corsOptionsDelegate));
 
 // Rate Limiting
 const limiter = rateLimit({
