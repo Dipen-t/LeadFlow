@@ -16,15 +16,7 @@ export const getDashboardMetrics = async (req: Request, res: Response, next: Nex
     const docFilter: any = { brokerageId };
     const taskFilter: any = { brokerageId };
 
-    // If it's an Advisor, restrict metrics to their assigned entities
-    if (role === 'ADVISOR') {
-      leadFilter.assignedAdvisorId = userId;
-      taskFilter.assignedAdvisorId = userId;
-
-      const assignedLeads = await Lead.find({ assignedAdvisorId: userId }).select('_id');
-      const assignedClients = await Client.find({ leadId: { $in: assignedLeads.map(l => l._id) } }).select('_id');
-      docFilter.clientId = { $in: assignedClients.map(c => c._id) };
-    }
+    // Removed ADVISOR restrictions per architectural change
 
     // 17.1 Metrics Gathering
     const [totalLeads, wonLeads, lostLeads, duplicateLeads] = await Promise.all([

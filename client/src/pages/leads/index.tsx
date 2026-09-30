@@ -8,9 +8,8 @@ import { type DropResult } from '@hello-pangea/dnd';
 import { useSocket } from '../../hooks/useSocket';
 import { useAuthStore } from '../../store/authStore';
 import type { Lead, PipelineStage } from './types';
-import { 
   fetchPipelineStagesAPI, fetchLeadsAPI, fetchAdvisorsAPI, 
-  createLeadAPI, moveLeadAPI, assignLeadAPI, convertLeadAPI 
+  createLeadAPI, moveLeadAPI, convertLeadAPI 
 } from './api';
 import { LeadsTable } from './LeadsTable';
 import { LeadsBoard } from './LeadsBoard';
@@ -96,14 +95,7 @@ export default function Leads() {
     }
   };
 
-  const handleAssignLead = async (lead: Lead, advisorId: string) => {
-    try {
-      const updatedLead = await assignLeadAPI(lead._id, advisorId);
-      setLeads(prev => prev.map(l => l._id === lead._id ? updatedLead : l));
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to assign lead');
-    }
-  };
+
 
   const handleConvertLead = async (lead: Lead) => {
     try {
@@ -197,7 +189,6 @@ export default function Leads() {
           advisors={advisors} 
           userRole={user?.role} 
           onMoveLead={handleMoveLead}
-          onAssignLead={handleAssignLead}
           onConvertLead={handleConvertLead}
           onDragEnd={onDragEnd}
         />
@@ -208,7 +199,6 @@ export default function Leads() {
           advisors={advisors} 
           userRole={user?.role} 
           onMoveLead={handleMoveLead}
-          onAssignLead={handleAssignLead}
           onConvertLead={handleConvertLead}
         />
       )}

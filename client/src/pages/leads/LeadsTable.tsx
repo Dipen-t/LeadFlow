@@ -42,18 +42,7 @@ export function LeadsTable({ leads, stages, advisors, userRole, onMoveLead, onAs
                       <option key={s._id} value={s._id}>{s.name}</option>
                     ))}
                   </select>
-                  {userRole === 'BROKERAGE_ADMIN' && (
-                    <select 
-                      className="text-sm bg-transparent border rounded p-1 max-w-[150px] truncate ml-2"
-                      value={lead.assignedAdvisorId || ''}
-                      onChange={(e) => onAssignLead(lead, e.target.value)}
-                    >
-                      <option value="">Unassigned</option>
-                      {advisors.map(a => (
-                        <option key={a._id} value={a._id}>{a.name}</option>
-                      ))}
-                    </select>
-                  )}
+
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="outline" size="sm" onClick={() => onConvertLead(lead)}>

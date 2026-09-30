@@ -106,11 +106,7 @@ export const getClients = async (req: Request, res: Response, next: NextFunction
     
     let query: any = { brokerageId };
 
-    if (req.user?.role === 'ADVISOR') {
-      const myLeads = await Lead.find({ brokerageId, assignedAdvisorId: req.user.userId });
-      const leadIds = myLeads.map(l => l._id);
-      query.leadId = { $in: leadIds };
-    }
+
 
     const clients = await Client.find(query);
     

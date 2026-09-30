@@ -26,10 +26,7 @@ export const getLeads = async (req: Request, res: Response, next: NextFunction) 
     const brokerageId = req.user?.brokerageId;
     const query: any = { brokerageId, status: 'ACTIVE' };
     
-    // Advisors can only see leads assigned to them
-    if (req.user?.role === 'ADVISOR') {
-      query.assignedAdvisorId = req.user.userId;
-    }
+    // Advisors now have access to all leads in the brokerage
 
     const leads = await Lead.find(query);
 
@@ -75,9 +72,6 @@ export const moveLeadStage = async (req: Request, res: Response, next: NextFunct
     const { pipelineStageId, version } = updateStageSchema.parse(req.body);
 
     const query: any = { _id: id, brokerageId };
-    if (req.user?.role === 'ADVISOR') {
-      query.assignedAdvisorId = req.user.userId;
-    }
 
     const lead = await Lead.findOne(query);
     if (!lead) {
@@ -113,46 +107,4 @@ export const moveLeadStage = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-const assignLeadSchema = z.object({
-  advisorId: z.string().min(24).nullable(), // Nullable if they want to unassign
-});
 
-export const assignLead = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const brokerageId = req.user?.brokerageId;
-    const { id: leadId } = req.params;
-    const { advisorId } = assignLeadSchema.parse(req.body);
-
-    const lead = await Lead.findOne({ _id: leadId, brokerageId });
-    if (!lead) {
-      throw new NotFoundError('Lead not found');
-    }
-
-    if (advisorId) {
-      // Verify advisor belongs to the same brokerage and is an ADVISOR
-      const advisor = await User.findOne({ _id: advisorId, brokerageId, role: 'ADVISOR' });
-      if (!advisor) {
-        throw new AppError('Invalid advisor or advisor does not belong to this brokerage', 400);
-      }
-    }
-
-    const previousAdvisorId = lead.assignedAdvisorId;
-    lead.assignedAdvisorId = advisorId as any;
-    await lead.save(); // Atomic update
-
-    // If assigned for the first time, trigger automations for the current stage
-    if (!previousAdvisorId && advisorId) {
-      triggerStageAutomations(brokerageId as any, lead.pipelineStageId as any, lead._id as any);
-    }
-
-    broadcastToBrokerage(brokerageId as string, 'lead.assigned', { lead });
-    logger.info({ event: 'lead.assigned', leadId: lead._id, advisorId }, 'Lead assigned to advisor');
-
-    res.json({
-      status: 'success',
-      data: { lead },
-    });
-  } catch (err) {
-    next(err);
-  }
-};

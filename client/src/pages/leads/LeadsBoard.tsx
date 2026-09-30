@@ -71,21 +71,7 @@ export function LeadsBoard({ leads, stages, advisors, userRole, onMoveLead, onAs
                                     </select>
                                   </div>
                                   
-                                  {userRole === 'BROKERAGE_ADMIN' && (
-                                    <div className="mt-2 pt-2 border-t flex justify-between items-center">
-                                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Assign to:</span>
-                                      <select 
-                                        className="text-xs bg-transparent border-none p-0 focus:ring-0 cursor-pointer max-w-[120px] truncate"
-                                        value={lead.assignedAdvisorId || ''}
-                                        onChange={(e) => onAssignLead(lead, e.target.value)}
-                                      >
-                                        <option value="">Unassigned</option>
-                                        {advisors.map(a => (
-                                          <option key={a._id} value={a._id}>{a.name}</option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                  )}
+
                                   <div className="mt-2 text-right">
                                     <Button variant="outline" size="sm" className="h-6 text-[10px] w-full" onClick={() => onConvertLead(lead)}>
                                       Convert to Client

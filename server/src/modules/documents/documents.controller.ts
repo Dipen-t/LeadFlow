@@ -80,16 +80,7 @@ export const getClientDocuments = async (req: Request, res: Response, next: Next
       }
     }
 
-    // Verify advisor permission
-    if (req.user?.role === 'ADVISOR') {
-      const client = await Client.findOne({ _id: clientId, brokerageId });
-      if (!client) throw new NotFoundError('Client not found');
-      
-      const lead = await Lead.findOne({ _id: client.leadId, assignedAdvisorId: req.user.userId });
-      if (!lead) {
-        throw new AppError('Not authorized to view documents for this client', 403);
-      }
-    }
+
 
     const documents = await Document.find({ clientId, brokerageId }).sort({ uploadedAt: -1 });
 
@@ -109,11 +100,7 @@ export const getAllDocuments = async (req: Request, res: Response, next: NextFun
       query.brokerageId = req.user?.brokerageId;
     }
 
-    if (req.user?.role === 'ADVISOR') {
-      const myLeads = await Lead.find({ brokerageId: req.user.brokerageId, assignedAdvisorId: req.user.userId });
-      const myClients = await Client.find({ leadId: { $in: myLeads.map(l => l._id) } });
-      query.clientId = { $in: myClients.map(c => c._id) };
-    }
+
 
     const documents = await Document.find(query)
       .sort({ uploadedAt: -1 })
@@ -149,15 +136,7 @@ export const deleteDocument = async (req: Request, res: Response, next: NextFunc
       throw new NotFoundError('Document not found');
     }
 
-    if (req.user?.role === 'ADVISOR') {
-      const client = await Client.findOne({ _id: doc.clientId, brokerageId: req.user.brokerageId });
-      if (!client) throw new NotFoundError('Client not found');
-      
-      const lead = await Lead.findOne({ _id: client.leadId, assignedAdvisorId: req.user.userId });
-      if (!lead) {
-        throw new AppError('Not authorized to access documents for this client', 403);
-      }
-    }
+
 
     await doc.deleteOne();
 
@@ -191,15 +170,7 @@ export const downloadDocument = async (req: Request, res: Response, next: NextFu
       throw new NotFoundError('Document not found');
     }
 
-    if (req.user?.role === 'ADVISOR') {
-      const client = await Client.findOne({ _id: doc.clientId, brokerageId: req.user.brokerageId });
-      if (!client) throw new NotFoundError('Client not found');
-      
-      const lead = await Lead.findOne({ _id: client.leadId, assignedAdvisorId: req.user.userId });
-      if (!lead) {
-        throw new AppError('Not authorized to access documents for this client', 403);
-      }
-    }
+
 
     const response = await fetch(doc.storageKey);
     if (!response.ok) {
