@@ -10,12 +10,14 @@ export function useSocket() {
     if (!token) return;
 
     // Connect to the Socket.IO server running on the same domain or an API URL
-    const socketURL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    // Use regex to properly strip /api or /api/ from the end of the URL
+    const socketURL = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
     
     socketRef.current = io(socketURL, {
       auth: { token },
       withCredentials: true,
-      transports: ['websocket', 'polling']
+      // Force websocket transport to avoid sticky session requirements / polling issues on Render
+      transports: ['websocket']
     });
 
     socketRef.current.on('connect', () => {

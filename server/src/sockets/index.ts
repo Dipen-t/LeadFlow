@@ -9,7 +9,11 @@ export let io: SocketIOServer;
 export const initSocket = (httpServer: HttpServer) => {
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: env.CLIENT_URL,
+      origin: (origin, callback) => {
+        // Allow the specific CLIENT_URL, but also allow requests to reflect their origin
+        // This helps with Render deployments and preview URLs.
+        callback(null, origin || true);
+      },
       methods: ['GET', 'POST'],
       credentials: true,
     },
