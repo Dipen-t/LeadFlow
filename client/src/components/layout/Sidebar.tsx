@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, ShieldAlert, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, Folders, CheckSquare, LogOut, ShieldAlert, Zap, Webhook } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/button';
 
@@ -7,19 +7,26 @@ export default function Sidebar() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Leads', href: '/leads', icon: Users },
-    { name: 'Clients', href: '/clients', icon: Users },
-    { name: 'Documents', href: '/documents', icon: Folders },
-    { name: 'Tasks', href: '/tasks', icon: CheckSquare },
-  ];
+  const navigation = [];
 
-  if (user?.role !== 'ADVISOR' && user?.role !== 'CLIENT') {
+  if (user?.role !== 'PLATFORM_ADMIN') {
+    navigation.push(
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'Leads', href: '/leads', icon: Users },
+      { name: 'Clients', href: '/clients', icon: Users },
+      { name: 'Documents', href: '/documents', icon: Folders },
+      { name: 'Tasks', href: '/tasks', icon: CheckSquare }
+    );
+  }
+
+  if (user?.role !== 'ADVISOR' && user?.role !== 'CLIENT' && user?.role !== 'PLATFORM_ADMIN') {
     navigation.push({ name: 'Automations', href: '/settings', icon: Zap });
   }
 
   if (user?.role === 'PLATFORM_ADMIN' || user?.role === 'BROKERAGE_ADMIN') {
+    if (user?.role === 'BROKERAGE_ADMIN') {
+      navigation.push({ name: 'Integrations', href: '/integrations', icon: Webhook });
+    }
     navigation.push({ name: user?.role === 'BROKERAGE_ADMIN' ? 'Users' : 'Platform', href: '/users', icon: ShieldAlert });
   }
 
