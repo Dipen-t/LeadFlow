@@ -232,7 +232,7 @@ The system enforces strict RBAC at both the API and UI layers:
 |--------------------|----------------------------------------------------------------------------------------------------------|
 | `PLATFORM_ADMIN`   | Full system access. Manage brokerages, users, view all data across tenants.                              |
 | `BROKERAGE_ADMIN`  | Manage their brokerage's users, leads, pipeline stages, automations, tasks. View all brokerage data.     |
-| `ADVISOR`          | View/manage only leads assigned to them. Create/complete tasks. View documents of their clients only.    |
+| `ADVISOR`          | View/manage only leads assigned to them. Create/complete tasks. View and manage all brokerage clients and their documents. |
 | `CLIENT`           | Access their own Client Portal. Upload documents. View their own document status.                        |
 
 **Important:** All queries are filtered by `brokerageId` at the middleware level. An advisor from Brokerage A cannot access data from Brokerage B under any circumstances.
