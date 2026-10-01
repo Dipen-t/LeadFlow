@@ -476,4 +476,10 @@ No leads available yet. Even tho there are available leads
 
 89. Right now during the upload we can upload n no. of files i think we should set a limit of no. of file can be taken as once.
 
+91. advisor cannot see the tasks which are created
 
+92. "assignedAdvisorId": { "_id": "6abe734b5e063e4f77a31a10", "name": "admin" }, Why is that ?? that does not make even sense there is going to be no assigned to anyone not anyone there should nt be assigned advisor Id
+
+93. There shouldnt be the check of the role there as it can be fetched by both admin and any admin or any advisor we ve to handle the concurrency stupid
+
+94. initial stage of the form is being shown blank
