@@ -18,8 +18,18 @@ const updateStageSchema = z.object({
 export const getStages = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const brokerageId = req.user?.brokerageId;
-    const stages = await PipelineStage.find({ brokerageId }).sort({ order: 1 });
+    let stages = await PipelineStage.find({ brokerageId }).sort({ order: 1 });
     
+    if (stages.length === 0) {
+      const defaultStage = await PipelineStage.create({ 
+        brokerageId: brokerageId as string, 
+        name: 'NEW', 
+        order: 0, 
+        category: 'OPEN' 
+      });
+      stages = [defaultStage];
+    }
+
     res.json({
       status: 'success',
       data: { stages },

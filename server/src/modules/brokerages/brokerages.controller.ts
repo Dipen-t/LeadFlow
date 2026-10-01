@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { Brokerage } from './brokerage.model';
+import { PipelineStage } from '../pipeline/pipelineStage.model';
 import { AppError } from '../../utils/errors';
 
 const createBrokerageSchema = z.object({
@@ -48,6 +49,15 @@ export const createBrokerage = async (req: Request, res: Response, next: NextFun
       name,
       slug,
     });
+
+    // Create default pipeline stages for the new brokerage
+    await PipelineStage.insertMany([
+      { brokerageId: brokerage._id, name: 'NEW', order: 0, category: 'OPEN' },
+      { brokerageId: brokerage._id, name: 'CONTACTED', order: 1, category: 'OPEN' },
+      { brokerageId: brokerage._id, name: 'QUALIFIED', order: 2, category: 'OPEN' },
+      { brokerageId: brokerage._id, name: 'WON', order: 3, category: 'WON' },
+      { brokerageId: brokerage._id, name: 'LOST', order: 4, category: 'LOST' }
+    ]);
 
     res.status(201).json({
       status: 'success',
