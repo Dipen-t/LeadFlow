@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
@@ -21,6 +21,12 @@ export function LeadForm({ stages, onSubmit }: LeadFormProps) {
     phone: '',
     pipelineStageId: stages[0]?._id || '',
   });
+
+  useEffect(() => {
+    if (!formData.pipelineStageId && stages.length > 0) {
+      setFormData(prev => ({ ...prev, pipelineStageId: stages[0]._id }));
+    }
+  }, [stages, formData.pipelineStageId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
