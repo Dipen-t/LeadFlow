@@ -9,9 +9,6 @@ export const getMyTasks = async (req: Request, res: Response, next: NextFunction
     const { status } = req.query; // 'PENDING' | 'COMPLETED'
 
     const filter: any = { brokerageId };
-    if (req.user?.role === 'ADVISOR') {
-      filter.assignedAdvisorId = userId;
-    }
     if (status) filter.status = status;
 
     const tasks = await Task.find(filter).sort({ dueAt: 1 }).populate('leadId', 'firstName lastName').populate('assignedAdvisorId', 'name');
@@ -42,9 +39,6 @@ export const completeTask = async (req: Request, res: Response, next: NextFuncti
     const { id } = req.params;
 
     const query: any = { _id: id, brokerageId };
-    if (req.user?.role === 'ADVISOR') {
-      query.assignedAdvisorId = userId;
-    }
 
     const task = await Task.findOneAndUpdate(
       query,

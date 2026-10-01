@@ -32,40 +32,33 @@ export const triggerStageAutomations = async (
     }
 
     // 2. Process Task Automations
-    // Use assigned advisor, fallback to the user who triggered the stage change
-    const targetAdvisorId = lead.assignedAdvisorId || actingUserId;
+    const taskTemplates = await TaskTemplate.find({ brokerageId, pipelineStageId });
+    
+    if (taskTemplates.length > 0) {
+      // Prevent duplicate tasks if lead goes back and forth
+      const existingTasks = await Task.find({ brokerageId, leadId, status: 'PENDING' });
+      const existingTitles = new Set(existingTasks.map(t => t.title));
 
-    if (targetAdvisorId) {
-      const taskTemplates = await TaskTemplate.find({ brokerageId, pipelineStageId });
-      
-      if (taskTemplates.length > 0) {
-        // Prevent duplicate tasks if lead goes back and forth
-        const existingTasks = await Task.find({ brokerageId, leadId, status: 'PENDING' });
-        const existingTitles = new Set(existingTasks.map(t => t.title));
+      const templatesToCreate = taskTemplates.filter(t => !existingTitles.has(t.title));
 
-        const templatesToCreate = taskTemplates.filter(t => !existingTitles.has(t.title));
+      if (templatesToCreate.length > 0) {
+        const tasksToCreate = templatesToCreate.map(template => {
+          const dueAt = new Date();
+          dueAt.setHours(dueAt.getHours() + template.dueInHours); // 16.1 Due calculations
 
-        if (templatesToCreate.length > 0) {
-          const tasksToCreate = templatesToCreate.map(template => {
-            const dueAt = new Date();
-            dueAt.setHours(dueAt.getHours() + template.dueInHours); // 16.1 Due calculations
+          return {
+            brokerageId,
+            leadId,
+            assignedAdvisorId: lead.assignedAdvisorId || null,
+            title: template.title,
+            dueAt,
+            status: 'PENDING',
+          };
+        });
 
-            return {
-              brokerageId,
-              leadId,
-              assignedAdvisorId: targetAdvisorId,
-              title: template.title,
-              dueAt,
-              status: 'PENDING',
-            };
-          });
-
-          await Task.insertMany(tasksToCreate);
-          logger.info({ event: 'task.created', leadId, taskCount: tasksToCreate.length }, `${tasksToCreate.length} task automations assigned to Advisor ${targetAdvisorId} for Lead ${leadId}`);
-        }
+        await Task.insertMany(tasksToCreate);
+        logger.info({ event: 'task.created', leadId, taskCount: tasksToCreate.length }, `${tasksToCreate.length} task automations assigned for Lead ${leadId}`);
       }
-    } else {
-      logger.warn({ event: 'automation.task_skipped', leadId }, 'Task automations skipped because lead has no assigned advisor and no acting user provided');
     }
 
   } catch (err: any) {

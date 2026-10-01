@@ -25,9 +25,6 @@ export const getLeads = async (req: Request, res: Response, next: NextFunction) 
   try {
     const brokerageId = req.user?.brokerageId;
     const query: any = { brokerageId, status: 'ACTIVE' };
-    
-    // Advisors now have access to all leads in the brokerage
-
     const leads = await Lead.find(query);
 
     res.json({

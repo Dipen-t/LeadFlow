@@ -26,7 +26,7 @@ const TaskSchema = new Schema(
     assignedAdvisorId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      default: null,
     },
     title: {
       type: String,
