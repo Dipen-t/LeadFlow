@@ -8,7 +8,8 @@ import { logger } from '../../utils/logger';
 export const triggerStageAutomations = async (
   brokerageId: mongoose.Types.ObjectId,
   pipelineStageId: mongoose.Types.ObjectId,
-  leadId: mongoose.Types.ObjectId
+  leadId: mongoose.Types.ObjectId,
+  actingUserId?: mongoose.Types.ObjectId
 ) => {
   try {
     const lead = await Lead.findById(leadId);
@@ -31,8 +32,10 @@ export const triggerStageAutomations = async (
     }
 
     // 2. Process Task Automations
-    // 16.1 Assigned: Lead's assigned advisor
-    if (lead.assignedAdvisorId) {
+    // Use assigned advisor, fallback to the user who triggered the stage change
+    const targetAdvisorId = lead.assignedAdvisorId || actingUserId;
+
+    if (targetAdvisorId) {
       const taskTemplates = await TaskTemplate.find({ brokerageId, pipelineStageId });
       
       if (taskTemplates.length > 0) {
@@ -50,7 +53,7 @@ export const triggerStageAutomations = async (
             return {
               brokerageId,
               leadId,
-              assignedAdvisorId: lead.assignedAdvisorId,
+              assignedAdvisorId: targetAdvisorId,
               title: template.title,
               dueAt,
               status: 'PENDING',
@@ -58,13 +61,16 @@ export const triggerStageAutomations = async (
           });
 
           await Task.insertMany(tasksToCreate);
-          logger.info({ event: 'task.created', leadId, taskCount: tasksToCreate.length }, `${tasksToCreate.length} task automations assigned to Advisor ${lead.assignedAdvisorId} for Lead ${leadId}`);
+          logger.info({ event: 'task.created', leadId, taskCount: tasksToCreate.length }, `${tasksToCreate.length} task automations assigned to Advisor ${targetAdvisorId} for Lead ${leadId}`);
         }
       }
+    } else {
+      logger.warn({ event: 'automation.task_skipped', leadId }, 'Task automations skipped because lead has no assigned advisor and no acting user provided');
     }
 
-  } catch (err) {
-    logger.error({ err }, 'Critical error executing stage automations');
+  } catch (err: any) {
+    logger.error({ err, message: err.message }, 'Critical error executing stage automations');
+    console.error('CRITICAL AUTOMATION ERROR:', err);
     // We explicitly catch and swallow errors here so that automation failures 
     // never roll back or block the primary pipeline stage movement (Section 15.3).
   }

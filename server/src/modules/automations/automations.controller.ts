@@ -75,7 +75,8 @@ export const deleteTaskTemplate = async (req: Request, res: Response, next: Next
 
     const template = await TaskTemplate.findOneAndDelete({ _id: id, brokerageId });
     if (!template) {
-      throw new NotFoundError('Task template not found');
+      // Template is already deleted or not found. Handle idempotently.
+      return res.json({ status: 'success', message: 'Task template is already deleted', data: null });
     }
 
     res.json({ status: 'success', data: null });

@@ -51,13 +51,19 @@ export const createBrokerage = async (req: Request, res: Response, next: NextFun
     });
 
     // Create default pipeline stages for the new brokerage
-    await PipelineStage.insertMany([
-      { brokerageId: brokerage._id, name: 'NEW', order: 0, category: 'OPEN' },
-      { brokerageId: brokerage._id, name: 'CONTACTED', order: 1, category: 'OPEN' },
-      { brokerageId: brokerage._id, name: 'QUALIFIED', order: 2, category: 'OPEN' },
-      { brokerageId: brokerage._id, name: 'WON', order: 3, category: 'WON' },
-      { brokerageId: brokerage._id, name: 'LOST', order: 4, category: 'LOST' }
-    ]);
+    try {
+      await PipelineStage.insertMany([
+        { brokerageId: brokerage._id, name: 'NEW', order: 0, category: 'OPEN' },
+        { brokerageId: brokerage._id, name: 'CONTACTED', order: 1, category: 'OPEN' },
+        { brokerageId: brokerage._id, name: 'QUALIFIED', order: 2, category: 'OPEN' },
+        { brokerageId: brokerage._id, name: 'WON', order: 3, category: 'WON' },
+        { brokerageId: brokerage._id, name: 'LOST', order: 4, category: 'LOST' }
+      ]);
+    } catch (insertErr: any) {
+      console.error('Failed to create default pipeline stages:', insertErr);
+      // We log it, but we can still throw it so the request fails
+      throw insertErr;
+    }
 
     res.status(201).json({
       status: 'success',

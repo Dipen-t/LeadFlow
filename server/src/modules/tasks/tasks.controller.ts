@@ -53,7 +53,12 @@ export const completeTask = async (req: Request, res: Response, next: NextFuncti
     );
 
     if (!task) {
-      throw new NotFoundError('Task not found or unauthorized');
+      // Task was already deleted or doesn't exist.
+      return res.json({
+        status: 'success',
+        message: 'Task already completed or deleted',
+        data: null,
+      });
     }
 
     res.json({

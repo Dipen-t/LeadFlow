@@ -133,10 +133,13 @@ export const deleteDocument = async (req: Request, res: Response, next: NextFunc
 
     const doc = await Document.findOne(query);
     if (!doc) {
-      throw new NotFoundError('Document not found');
+      // Document is already deleted or not found. Handle idempotently.
+      return res.json({
+        status: 'success',
+        message: 'Document is already deleted',
+        data: null,
+      });
     }
-
-
 
     await doc.deleteOne();
 

@@ -92,7 +92,7 @@ export const moveLeadStage = async (req: Request, res: Response, next: NextFunct
     // Trigger automations if the stage actually changed
     if (previousStageId !== pipelineStageId) {
       // 15.3 & 16.2 Pipeline Trigger: We explicitly do NOT await this. 
-      triggerStageAutomations(brokerageId as any, lead.pipelineStageId as any, lead._id as any);
+      triggerStageAutomations(brokerageId as any, lead.pipelineStageId as any, lead._id as any, req.user?.userId as any);
     }
 
     broadcastToBrokerage(brokerageId as string, 'lead.stageChanged', { lead });

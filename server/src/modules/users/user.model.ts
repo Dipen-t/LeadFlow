@@ -36,7 +36,6 @@ const UserSchema = new Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
     },
@@ -54,6 +53,9 @@ const UserSchema = new Schema(
     timestamps: true,
   }
 );
+
+// Ensure email is unique per brokerage
+UserSchema.index({ brokerageId: 1, email: 1 }, { unique: true });
 
 // Hash password before saving
 UserSchema.pre<IUser>('save', async function () {

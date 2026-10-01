@@ -123,7 +123,9 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
     }
     
     const targetUser = await User.findById(userId);
-    if (!targetUser) throw new AppError('User not found', 404);
+    if (!targetUser) {
+      return res.json({ status: 'success', message: 'User is already deleted', data: null });
+    }
     
     if (req.user?.role === 'BROKERAGE_ADMIN' && targetUser.brokerageId?.toString() !== req.user.brokerageId) {
       throw new AppError('Not authorized to delete this user', 403);

@@ -45,7 +45,7 @@ export function TasksList({ tasks, onComplete }: TasksListProps) {
                       <p className={`text-xs mt-1 flex items-center gap-1 ${overdue ? 'text-red-600 dark:text-red-400 font-medium' : 'text-muted-foreground'}`}>
                         Due: {format(new Date(task.dueAt), 'PP p')}
                         {overdue && <span className="ml-1 uppercase text-[10px] tracking-wider font-bold">Overdue</span>}
-                        {task.assignedAdvisorId && <span className="ml-2 px-2 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded-full text-neutral-600 dark:text-neutral-400 font-medium">Assigned to: {task.assignedAdvisorId.name}</span>}
+                        {task.leadId && <span className="ml-2 px-2 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded-full text-neutral-600 dark:text-neutral-400 font-medium">Client: {task.leadId.firstName} {task.leadId.lastName}</span>}
                       </p>
                     </div>
                     <Button 
@@ -85,7 +85,7 @@ export function TasksList({ tasks, onComplete }: TasksListProps) {
                       {task.title}
                     </p>
                     <p className="text-xs mt-1 text-muted-foreground">
-                      Completed {task.assignedAdvisorId && `• Assigned to ${task.assignedAdvisorId.name}`}
+                      Completed {task.leadId && `• Client: ${task.leadId.firstName} ${task.leadId.lastName}`}
                     </p>
                   </div>
                 </li>
